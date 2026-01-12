@@ -1,0 +1,285 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Hospital {
+  HospitalID                 Int      @id @default(autoincrement())
+  HospitalName               String   @db.VarChar(250)
+  Address                    String?  @db.VarChar(500)
+
+  // Registration & numbering
+  DefaultPaymentModeID       Int?
+  RegistrationCharge         Decimal? @db.Decimal(10, 2)
+  RegistrationValidityMonths Int?
+  OpeningPatientNo           Int?
+  OpeningOPDNo               Int?
+  OpeningReceiptNo           Int?
+
+  // Flags
+  IsRateEnableInReceipt      Boolean? @default(false)
+  IsRegistrationFeeEnableInOPD Boolean? @default(false)
+
+  // Dates & audit
+  OpeningDate                DateTime
+  Description                String?  @db.VarChar(250)
+  UserID                     Int?
+
+  Created                    DateTime @default(now())
+  Modified                   DateTime @updatedAt
+
+  Doctors                    Doctor[]
+  Patients                   Patient[]
+  DiagnosisTypes             DiagnosisType[]
+  TreatmentTypes             TreatmentType[]
+
+
+}
+
+// Doctor Model
+
+model Doctor {
+  DoctorID    Int      @id @default(autoincrement())
+  DoctorName  String   @db.VarChar(250)
+
+  // Optional staff linkage
+  StaffID     Int?
+
+  // Relation
+  HospitalID  Int
+  Hospital    Hospital @relation(fields: [HospitalID], references: [HospitalID])
+
+  Description String?  @db.VarChar(250)
+  UserID      Int?
+
+  Created     DateTime @default(now())
+  Modified    DateTime @updatedAt
+  OPDs        OPD[] @relation("DoctorOPD")
+
+}
+
+// Patient Model
+
+model Patient {
+  PatientID               Int      @id @default(autoincrement())
+  PatientName             String   @db.VarChar(250)
+  PatientNo               Int
+  RegistrationDateTime    DateTime
+
+  Age                     Int?
+  BloodGroup              String?  @db.VarChar(20)
+  Gender                  String   @db.VarChar(10)
+  Occupation              String?  @db.VarChar(100)
+  Address                 String?  @db.VarChar(250)
+
+  // Location (can be linked later)
+  StateID                 Int?
+  CityID                  Int?
+  PinCode                 String?  @db.VarChar(10)
+
+  MobileNo                String   @db.VarChar(20)
+  EmergencyContactNo      String?  @db.VarChar(20)
+  ReferredBy              String?  @db.VarChar(250)
+  Description             String?  @db.VarChar(250)
+
+  // Relation
+  HospitalID              Int
+  Hospital                Hospital @relation(fields: [HospitalID], references: [HospitalID])
+
+  UserID                  Int?
+
+  Created                 DateTime @default(now())
+  Modified                DateTime @updatedAt
+  OPDs                    OPD[]
+
+}
+
+// OPD Model
+
+model OPD {
+  OPDID            Int      @id @default(autoincrement())
+  OPDNo            String?  @db.VarChar(250)
+  OPDDateTime      DateTime
+
+  // Relations
+  PatientID        Int
+  Patient          Patient  @relation(fields: [PatientID], references: [PatientID])
+
+  TreatedByDoctorID Int
+  Doctor            Doctor  @relation("DoctorOPD", fields: [TreatedByDoctorID], references: [DoctorID])
+
+  IsFollowUpCase    Boolean @default(false)
+  RegistrationFee   Decimal @db.Decimal(10, 2)
+  Description       String? @db.VarChar(250)
+  UserID            Int?
+
+  OLDOPDNo          String? @db.VarChar(250)
+
+  Created           DateTime @default(now())
+  Modified          DateTime @updatedAt
+
+  Diagnoses         OPDDiagnosisType[]
+  Receipts          Receipt[]
+
+
+}
+
+// Diagnosis Model
+
+model DiagnosisType {
+  DiagnosisTypeID        Int      @id @default(autoincrement())
+  DiagnosisTypeName      String   @db.VarChar(250)
+  DiagnosisTypeShortName String?  @db.VarChar(50)
+  IsActive               Boolean  @default(true)
+
+  // Relation
+  HospitalID             Int
+  Hospital               Hospital @relation(fields: [HospitalID], references: [HospitalID])
+
+  Description            String?  @db.VarChar(250)
+  UserID                 Int?
+
+  Created                DateTime @default(now())
+  Modified               DateTime @updatedAt
+
+  OPDs                   OPDDiagnosisType[]
+
+}
+
+model OPDDiagnosisType {
+  OPDDiagnosisTypeID Int      @id @default(autoincrement())
+
+  OPDID              Int
+  OPD                OPD      @relation(fields: [OPDID], references: [OPDID])
+
+  DiagnosisTypeID    Int
+  DiagnosisType      DiagnosisType @relation(fields: [DiagnosisTypeID], references: [DiagnosisTypeID])
+
+  Description        String?  @db.VarChar(250)
+  UserID             Int?
+
+  Created            DateTime @default(now())
+  Modified           DateTime @updatedAt
+}
+
+// Treatment Model
+
+model TreatmentType {
+  TreatmentTypeID        Int      @id @default(autoincrement())
+  TreatmentTypeName      String   @db.VarChar(250)
+  TreatmentTypeShortName String?  @db.VarChar(50)
+
+  // Relation
+  HospitalID             Int
+  Hospital               Hospital @relation(fields: [HospitalID], references: [HospitalID])
+
+  Description            String?  @db.VarChar(250)
+  UserID                 Int?
+
+  Created                DateTime @default(now())
+  Modified               DateTime @updatedAt
+
+  // Back relation to SubTreatmentType
+  SubTreatmentTypes      SubTreatmentType[]
+}
+
+model SubTreatmentType {
+  SubTreatmentTypeID   Int      @id @default(autoincrement())
+  SubTreatmentTypeName String   @db.VarChar(250)
+
+  // Relation to TreatmentType
+  TreatmentTypeID      Int
+  TreatmentType        TreatmentType @relation(fields: [TreatmentTypeID], references: [TreatmentTypeID])
+
+  Rate                 Decimal  @db.Decimal(10, 2)
+  IsActive             Boolean  @default(true)
+
+  Description          String?  @db.VarChar(250)
+  UserID               Int?
+  AccountID            Int?
+
+  Created              DateTime @default(now())
+  Modified             DateTime @updatedAt
+
+  ReceiptTrans         ReceiptTran[]
+
+}
+
+//Receipt Model
+
+model Receipt {
+  ReceiptID            Int      @id @default(autoincrement())
+  ReceiptNo            String?  @db.VarChar(250)
+  ReceiptDate          DateTime
+
+  // Relation
+  OPDID                Int
+  OPD                  OPD      @relation(fields: [OPDID], references: [OPDID])
+
+  AmountPaid           Decimal  @db.Decimal(10, 2)
+  PaymentModeID        Int
+  ReferenceNo          String?  @db.VarChar(250)
+  ReferenceDate        DateTime?
+
+  CancellationDateTime DateTime?
+  CancellationByUserID Int?
+  CancellationRemarks  String?  @db.VarChar(500)
+
+  Description          String?  @db.VarChar(250)
+  UserID               Int?
+
+  Created              DateTime @default(now())
+  Modified             DateTime @updatedAt
+
+  // Back relation
+  ReceiptTrans         ReceiptTran[]
+}
+
+model ReceiptTran {
+  ReceiptTranID     Int      @id @default(autoincrement())
+
+  // Relation to Receipt
+  ReceiptID         Int
+  Receipt           Receipt @relation(fields: [ReceiptID], references: [ReceiptID])
+
+  // Relation to SubTreatmentType
+  SubTreatmentTypeID Int
+  SubTreatmentType   SubTreatmentType @relation(fields: [SubTreatmentTypeID], references: [SubTreatmentTypeID])
+
+  Rate               Decimal @db.Decimal(10, 2)
+  Quantity           Int     @default(1)
+  Amount             Decimal @db.Decimal(10, 2)
+
+  Description        String? @db.VarChar(250)
+  UserID             Int?
+
+  Created            DateTime @default(now())
+  Modified           DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  DOCTOR
+  RECEPTIONIST
+}
+
+model User {
+  UserID    Int      @id @default(autoincrement())
+  Name      String
+  Email     String   @unique
+  Password  String
+  Role      Role
+
+  Created   DateTime @default(now())
+  Modified  DateTime @updatedAt
+}
