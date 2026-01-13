@@ -14,9 +14,9 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
 
   return (
-    <div className="min-h-screen flex bg-gray-100">
+    <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-64 bg-slate-900 text-white p-5 flex flex-col">
+      <aside className="w-64 flex-shrink-0 bg-gray-900 text-white p-5">
         <h2 className="text-xl font-bold mb-6">OPD Admin</h2>
 
         <nav className="space-y-3 flex-1">
@@ -63,7 +63,7 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 p-6 bg-white text-gray-900">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6">{children}</main>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireAuth } from "../lib/auth";
 import { getCurrentUser } from "../lib/auth";
 import { redirect } from "next/navigation";
@@ -14,18 +15,18 @@ export default async function DoctorLayout({
   }
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-64 bg-blue-900 text-white p-5">
+        <div className="h-screen flex overflow-hidden bg-gray-50">
+      <aside className="w-64 flex-shrink-0 bg-gray-900 text-white p-5">
         <h2 className="text-xl font-bold mb-4">Doctor Panel</h2>
 
         <nav className="space-y-3">
-          <a href="/doctor/dashboard">Dashboard</a>
-          <a href="/doctor/opd">My OPD</a>
-          <a href="/doctor/patients">Patients</a>
+          <Link href="/doctor/dashboard">Dashboard</Link>
+          <Link href="/doctor/opd">My OPD</Link>
+          <Link href="/doctor/patients">Patients</Link>
         </nav>
       </aside>
 
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6">{children}</main>
     </div>
   );
 }

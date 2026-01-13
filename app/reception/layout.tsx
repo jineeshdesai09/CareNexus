@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCurrentUser } from "../lib/auth";
 import { redirect } from "next/navigation";
 
@@ -13,19 +14,22 @@ export default async function ReceptionLayout({
   }
 
   return (
-    <div className="min-h-screen flex">
-      <aside className="w-64 bg-green-900 text-white p-5">
+    <div className="h-screen flex overflow-hidden bg-gray-50">
+      <aside className="w-64 flex-shrink-0 bg-gray-900 text-white p-5">
         <h2 className="text-xl font-bold mb-4">Reception</h2>
 
         <nav className="space-y-3">
-          <a href="/reception/patients">Patient Registration</a>
-          <a href="/reception/opd">Assign OPD</a>
-          <a href="/reception/status">OPD Status</a>
-          <a href="/reception/billing">Billing</a>
+          <Link href="/reception/patients">Patient Registration</Link>
+          <br />
+          <Link href="/reception/opd">Assign OPD</Link>
+          <br />
+          <Link href="/reception/status">OPD Status</Link>
+          <br />
+          <Link href="/reception/billing">Billing</Link>
         </nav>
       </aside>
 
-      <main className="flex-1 p-6">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6">{children}</main>
     </div>
   );
 }

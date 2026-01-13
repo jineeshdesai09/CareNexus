@@ -76,13 +76,14 @@ model Patient {
   PatientNo               Int
   RegistrationDateTime    DateTime
 
-  Age                     Int?
+  DOB                     DateTime
+  Age                     Int      // auto-calculated, not user input
+
   BloodGroup              String?  @db.VarChar(20)
   Gender                  String   @db.VarChar(10)
   Occupation              String?  @db.VarChar(100)
   Address                 String?  @db.VarChar(250)
 
-  // Location (can be linked later)
   StateID                 Int?
   CityID                  Int?
   PinCode                 String?  @db.VarChar(10)
@@ -92,17 +93,17 @@ model Patient {
   ReferredBy              String?  @db.VarChar(250)
   Description             String?  @db.VarChar(250)
 
-  // Relation
   HospitalID              Int
   Hospital                Hospital @relation(fields: [HospitalID], references: [HospitalID])
 
   UserID                  Int?
+  OPDs                    OPD[]
 
   Created                 DateTime @default(now())
   Modified                DateTime @updatedAt
-  OPDs                    OPD[]
-
 }
+
+
 
 // OPD Model
 

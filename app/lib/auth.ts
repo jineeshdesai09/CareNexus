@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "../lib/session";
 
+//Auth
+
 export async function requireAuth() {
   const userId = await getSession();
 
@@ -12,6 +14,8 @@ export async function requireAuth() {
   return userId;
 }
 
+// Roles 
+
 export async function requireAdmin() {
   const userId = await requireAuth();
 
@@ -21,6 +25,34 @@ export async function requireAdmin() {
 
   if (!user || user.Role !== "ADMIN") {
     redirect("/dashboard");
+  }
+
+  return user;
+}
+
+export async function requireDoctor() {
+  const userId = await requireAuth();
+
+  const user = await prisma.user.findUnique({
+    where: { UserID: userId },
+  });
+
+  if (!user || user.Role !== "DOCTOR") {
+    redirect("/login");
+  }
+
+  return user;
+}
+
+export async function requireReceptionist() {
+  const userId = await requireAuth();
+
+  const user = await prisma.user.findUnique({
+    where: { UserID: userId },
+  });
+
+  if (!user || user.Role !== "RECEPTIONIST") {
+    redirect("/login");
   }
 
   return user;
