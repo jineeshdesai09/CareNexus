@@ -1,0 +1,70 @@
+{/* Referred By */}
+          <div className="mb-8">
+            <label className="block text-sm font-medium text-gray-900 mb-2">
+              Referred By
+            </label>
+            <input
+              type="text"
+              name="referredBy"
+              value={formData.referredBy}
+              onChange={handleChange}
+              placeholder="Doctor name or hospital"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
+            />
+          </div>
+
+          {/* Insurance Section */}
+          <div className="border-t border-gray-200 pt-8">
+            <h2 className="text-lg font-medium text-gray-900 mb-6">
+              Insurance (optional)
+            </h2>
+
+            {/* Provider */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Provider
+              </label>
+              <input
+                type="text"
+                name="insuranceProvider"
+                value={formData.insuranceProvider}
+                onChange={handleChange}
+                placeholder="Insurance provider name"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
+              />
+            </div>
+
+            {/* Policy Number */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Policy Number
+              </label>
+              <input
+                type="text"
+                name="policyNumber"
+                value={formData.policyNumber}
+                onChange={handleChange}
+                placeholder="Policy / Member number"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
+              />
+            </div>
+
+            {/* Coverage Validity */}
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                Coverage Validity
+              </label>
+              <input
+                type="text"
+                name="coverageValidity"
+                value={formData.coverageValidity}
+                onChange={handleChange}
+                placeholder="Valid from - to"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
+              />
+            </div>
+          </div>

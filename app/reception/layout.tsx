@@ -19,6 +19,8 @@ export default async function ReceptionLayout({
         <h2 className="text-xl font-bold mb-4">Reception</h2>
 
         <nav className="space-y-3">
+          <Link href="/reception/dashboard">Dashboard</Link>
+          <br />
           <Link href="/reception/patients">Patient Registration</Link>
           <br />
           <Link href="/reception/opd">Assign OPD</Link>

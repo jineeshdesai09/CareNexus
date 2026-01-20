@@ -12,7 +12,6 @@ export async function createPatient(formData: FormData) {
   }
 
   const dobValue = formData.get("DOB");
-
   if (!dobValue) {
     throw new Error("Date of Birth is required");
   }
@@ -27,8 +26,10 @@ export async function createPatient(formData: FormData) {
     },
   });
 
-  if (!hospital) {
-    throw new Error("Hospital not configured");
+  if (!hospital || hospital.OpeningPatientNo === null) {
+    throw new Error(
+      "Hospital Opening Patient Number is not configured. Please update Hospital."
+    );
   }
 
   const hospitalId = hospital.HospitalID;
@@ -43,8 +44,54 @@ export async function createPatient(formData: FormData) {
     ? lastPatient.PatientNo + 1
     : hospital.OpeningPatientNo;
 
-  console.log("DOB:", dob);
-  console.log("Calculated Age:", age);
-  console.log("Generated PatientNo:", nextPatientNo);
+  const patientName = String(formData.get("PatientName"));
+  const gender = String(formData.get("Gender"));
+  const mobileNo = String(formData.get("MobileNo"));
+  const address = String(formData.get("Address") ?? "");
 
+  if (!patientName || !gender || !mobileNo) {
+    throw new Error("Missing required patient fields");
+  }
+
+  const bloodGroup = String(formData.get("BloodGroup") ?? "");
+  const emergencyContactNo = String(
+    formData.get("EmergencyContactNo") ?? ""
+  );
+  const referredBy = String(formData.get("ReferredBy") ?? "");
+  const description = String(formData.get("Description") ?? "");
+
+  const existingPatient = await prisma.patient.findFirst({
+    where: {
+      MobileNo: mobileNo,
+      HospitalID: hospitalId,
+    },
+  });
+
+  if (existingPatient) {
+    throw new Error("Patient with this mobile number already exists");
+  }
+
+  const patient = await prisma.patient.create({
+    data: {
+      PatientName: patientName,
+      PatientNo: nextPatientNo,
+      RegistrationDateTime: new Date(),
+
+      DOB: dob,
+      Age: age,
+      Gender: gender,
+      BloodGroup: bloodGroup || null,
+
+      MobileNo: mobileNo,
+      EmergencyContactNo: emergencyContactNo || null,
+
+      Address: address || null,
+      ReferredBy: referredBy || null,
+      Description: description || null,
+
+      HospitalID: hospitalId,
+    },
+  });
+
+  console.log("Patient created with ID:", patient.PatientID);
 }

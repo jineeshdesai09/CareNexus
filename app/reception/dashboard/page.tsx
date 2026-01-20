@@ -10,7 +10,7 @@ export default async function ReceptionDashboard() {
       </h1>
 
       <p className="text-gray-600 mb-6">
-        Welcome, {user?.Name}
+        Welcome,
       </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -108,32 +108,44 @@ model Patient {
 // OPD Model
 
 model OPD {
-  OPDID            Int      @id @default(autoincrement())
-  OPDNo            String?  @db.VarChar(250)
-  OPDDateTime      DateTime
+  OPDID               Int       @id @default(autoincrement())
+  OPDNo               String?   @db.VarChar(250)
+  OPDDateTime         DateTime
+
+  // Queue / Status
+  TokenNo             Int?
+  Status              OPDStatus @default(REGISTERED)
+  IsEmergency         Boolean   @default(false)
+
+  // Consultation timing
+  ConsultationStart   DateTime?
+  ConsultationEnd     DateTime?
 
   // Relations
-  PatientID        Int
-  Patient          Patient  @relation(fields: [PatientID], references: [PatientID])
+  PatientID           Int
+  Patient             Patient   @relation(fields: [PatientID], references: [PatientID])
 
-  TreatedByDoctorID Int
-  Doctor            Doctor  @relation("DoctorOPD", fields: [TreatedByDoctorID], references: [DoctorID])
+  TreatedByDoctorID   Int
+  Doctor              Doctor    @relation("DoctorOPD", fields: [TreatedByDoctorID], references: [DoctorID])
 
-  IsFollowUpCase    Boolean @default(false)
-  RegistrationFee   Decimal @db.Decimal(10, 2)
-  Description       String? @db.VarChar(250)
-  UserID            Int?
+  // OPD details
+  IsFollowUpCase      Boolean   @default(false)
+  FollowUpDate        DateTime?
 
-  OLDOPDNo          String? @db.VarChar(250)
+  RegistrationFee     Decimal   @db.Decimal(10, 2)
+  Description         String?   @db.VarChar(250)
+  OLDOPDNo            String?   @db.VarChar(250)
 
-  Created           DateTime @default(now())
-  Modified          DateTime @updatedAt
+  // Audit
+  UserID              Int?
+  Created             DateTime  @default(now())
+  Modified            DateTime  @updatedAt
 
-  Diagnoses         OPDDiagnosisType[]
-  Receipts          Receipt[]
-
-
+  // Child tables
+  Diagnoses           OPDDiagnosisType[]
+  Receipts            Receipt[]
 }
+
 
 // Diagnosis Model
 
@@ -273,6 +285,17 @@ enum Role {
   DOCTOR
   RECEPTIONIST
 }
+
+enum OPDStatus {
+  REGISTERED      // Created by reception
+  WAITING         // Waiting for doctor
+  IN_CONSULTATION // Doctor started
+  COMPLETED       // Doctor finished
+  BILLED          // Receipt generated
+  CLOSED          // OPD closed
+  CANCELLED       // Cancelled by staff
+}
+
 
 model User {
   UserID    Int      @id @default(autoincrement())
