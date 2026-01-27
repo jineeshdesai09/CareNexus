@@ -49,24 +49,63 @@ model Hospital {
 // Doctor Model
 
 model Doctor {
-  DoctorID    Int      @id @default(autoincrement())
-  DoctorName  String   @db.VarChar(250)
+  DoctorID        Int      @id @default(autoincrement())
 
-  // Optional staff linkage
-  StaffID     Int?
+  // Personal
+  FirstName       String   @db.VarChar(100)
+  LastName        String   @db.VarChar(100)
+  DOB             DateTime?
+  Gender          String   @db.VarChar(10)
+  MobileNo        String   @db.VarChar(20)
+  Email           String   @db.VarChar(150)
+  Address         String?
 
-  // Relation
-  HospitalID  Int
-  Hospital    Hospital @relation(fields: [HospitalID], references: [HospitalID])
+  // Professional
+  RegistrationNo  String   @db.VarChar(100)
+  RegistrationCouncil String?
+  Specialization  String
+  Department      String
+  Qualification   String?
+  ExperienceYears Int?
+  ConsultationFee Decimal @db.Decimal(10,2)
 
-  Description String?  @db.VarChar(250)
-  UserID      Int?
+  AboutDoctor     String?
 
-  Created     DateTime @default(now())
-  Modified    DateTime @updatedAt
-  OPDs        OPD[] @relation("DoctorOPD")
+  // Availability (we’ll normalize later)
+  IsEmergencyAvailable Boolean @default(false)
 
+  HospitalID      Int
+  Hospital        Hospital @relation(fields: [HospitalID], references: [HospitalID])
+
+  Created         DateTime @default(now())
+  Modified        DateTime @updatedAt
+
+  OPDs            OPD[]    @relation("DoctorOPD")
+  Availabilities DoctorAvailability[]
 }
+
+// Availability Model
+
+model DoctorAvailability {
+  AvailabilityID   Int      @id @default(autoincrement())
+
+  DoctorID         Int
+  Doctor           Doctor   @relation(fields: [DoctorID], references: [DoctorID])
+
+  DayOfWeek        Int      // 1 = Monday ... 7 = Sunday
+  FromTime         String   @db.VarChar(10) // "09:00"
+  ToTime           String   @db.VarChar(10) // "17:00"
+
+  MaxPatients      Int
+  IsAvailable      Boolean  @default(true)
+  IsEmergencyOnly  Boolean  @default(false)
+
+  Created          DateTime @default(now())
+  Modified         DateTime @updatedAt
+
+  @@unique([DoctorID, DayOfWeek])
+}
+
 
 // Patient Model
 
