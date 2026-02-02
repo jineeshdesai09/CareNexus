@@ -51,7 +51,8 @@ export default async function OPDQueuePage() {
 
       {opds.length === 0 ? (
         <p className="text-gray-500">No OPDs created today.</p>
-      ) : (
+      ) : 
+      (
         <table className="w-full border rounded bg-white">
           <thead className="bg-gray-100">
             <tr>

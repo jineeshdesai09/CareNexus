@@ -75,7 +75,7 @@ export default async function DoctorTodayOPDPage() {
                         await endConsultation(o.OPDID);
                       }}
                     >
-                      <button className="bg-green-600 text-white px-3 py-1 rounded">
+                      <button className="bg-green-600 text-white px-3 py-1 rounded" >
                         End
                       </button>
                     </form>

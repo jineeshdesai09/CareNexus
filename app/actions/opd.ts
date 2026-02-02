@@ -56,6 +56,7 @@ export async function createOPD(formData: FormData) {
 
       RegistrationFee: 0,
       UserID: userId,
+      
     },
   });
 }
