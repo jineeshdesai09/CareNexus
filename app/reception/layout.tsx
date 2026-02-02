@@ -27,6 +27,8 @@ export default async function ReceptionLayout({
           <br />
           <Link href="/reception/status">OPD Status</Link>
           <br />
+          <Link href="/reception/opd/queue">OPD Queue</Link>
+          <br />
           <Link href="/reception/billing">Billing</Link>
         </nav>
       </aside>

@@ -23,7 +23,7 @@ export default async function DoctorAvailabilityPage({
 }) {
   await requireAdmin();
 
-  // ✅ FIX: await params
+  // await params
   const { id } = await params;
 
   const doctorId = Number(id);
