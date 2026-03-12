@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 export default async function DoctorTodayOPDPage() {
   const user = await getCurrentUser();
-  if (!user || user.Role !== "DOCTOR") redirect("/dashboard");
+  if (!user || user.Role !== "DOCTOR") redirect("/login");
 
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);

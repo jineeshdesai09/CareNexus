@@ -1,97 +1,82 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { getSession } from "../lib/session";
-import { calculateAge } from "../lib/utils/date";
+import { getSession } from "@/app/lib/session";
+import { redirect } from "next/navigation";
+
+export async function searchPatients(query: string) {
+  const userId = await getSession();
+  if (!userId) throw new Error("Unauthorized");
+
+  if (!query || query.length < 2) return [];
+
+  return await prisma.patient.findMany({
+    where: {
+      OR: [
+        { PatientName: { contains: query, mode: "insensitive" } },
+        { MobileNo: { contains: query } },
+        { PatientNo: isNaN(Number(query)) ? undefined : Number(query) },
+      ].filter(Boolean) as any,
+    },
+    select: {
+      PatientID: true,
+      PatientName: true,
+      PatientNo: true,
+      MobileNo: true,
+      Age: true,
+      Gender: true,
+    },
+    take: 10,
+    orderBy: { PatientName: "asc" },
+  });
+}
 
 export async function createPatient(formData: FormData) {
-
   const userId = await getSession();
-  if (!userId) {
-    throw new Error("Unauthorized");
-  }
+  if (!userId) throw new Error("Unauthorized");
 
-  const dobValue = formData.get("DOB");
-  if (!dobValue) {
-    throw new Error("Date of Birth is required");
-  }
+  const hospital = await prisma.hospital.findFirst();
+  if (!hospital) throw new Error("Hospital not configured");
 
-  const dob = new Date(String(dobValue));
-  const age = calculateAge(dob);
-
-  const hospital = await prisma.hospital.findFirst({
-    select: {
-      HospitalID: true,
-      OpeningPatientNo: true,
-    },
-  });
-
-  if (!hospital || hospital.OpeningPatientNo === null) {
-    throw new Error(
-      "Hospital Opening Patient Number is not configured. Please update Hospital."
-    );
-  }
-
-  const hospitalId = hospital.HospitalID;
-
+  // Generate PatientNo
   const lastPatient = await prisma.patient.findFirst({
-    where: { HospitalID: hospitalId },
     orderBy: { PatientNo: "desc" },
     select: { PatientNo: true },
   });
 
-  const nextPatientNo = lastPatient
+  const nextPatientNo = lastPatient?.PatientNo
     ? lastPatient.PatientNo + 1
-    : hospital.OpeningPatientNo;
+    : (hospital.OpeningPatientNo || 1001);
 
-  const patientName = String(formData.get("PatientName"));
-  const gender = String(formData.get("Gender"));
-  const mobileNo = String(formData.get("MobileNo"));
-  const address = String(formData.get("Address") ?? "");
+  const dobString = formData.get("DOB") as string;
+  if (!dobString) throw new Error("Date of Birth is required");
 
-  if (!patientName || !gender || !mobileNo) {
-    throw new Error("Missing required patient fields");
+  const dob = new Date(dobString);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+    age--;
   }
 
-  const bloodGroup = String(formData.get("BloodGroup") ?? "");
-  const emergencyContactNo = String(
-    formData.get("EmergencyContactNo") ?? ""
-  );
-  const referredBy = String(formData.get("ReferredBy") ?? "");
-  const description = String(formData.get("Description") ?? "");
-
-  const existingPatient = await prisma.patient.findFirst({
-    where: {
-      MobileNo: mobileNo,
-      HospitalID: hospitalId,
-    },
-  });
-
-  if (existingPatient) {
-    throw new Error("Patient with this mobile number already exists");
-  }
-
-  const patient = await prisma.patient.create({
+  await prisma.patient.create({
     data: {
-      PatientName: patientName,
+      PatientName: String(formData.get("PatientName")),
       PatientNo: nextPatientNo,
       RegistrationDateTime: new Date(),
-
       DOB: dob,
       Age: age,
-      Gender: gender,
-      BloodGroup: bloodGroup || null,
-
-      MobileNo: mobileNo,
-      EmergencyContactNo: emergencyContactNo || null,
-
-      Address: address || null,
-      ReferredBy: referredBy || null,
-      Description: description || null,
-
-      HospitalID: hospitalId,
+      Gender: String(formData.get("Gender")),
+      BloodGroup: String(formData.get("BloodGroup") || ""),
+      MobileNo: String(formData.get("MobileNo")),
+      EmergencyContactNo: String(formData.get("EmergencyContactNo") || ""),
+      Address: String(formData.get("Address") || ""),
+      ReferredBy: String(formData.get("ReferredBy") || ""),
+      Description: String(formData.get("Description") || ""),
+      HospitalID: hospital.HospitalID,
+      UserID: userId,
     },
   });
 
-  console.log("Patient created with ID:", patient.PatientID);
+  redirect("/reception/patients/directory?success=1");
 }

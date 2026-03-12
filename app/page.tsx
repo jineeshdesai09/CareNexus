@@ -188,9 +188,8 @@ export default function OPDLandingPage() {
                 <div
                   className={`w-14 h-14 rounded-xl ${getColorClasses(
                     feature.color
-                  )} flex items-center justify-center mb-6 transition-transform ${
-                    hoveredCard === idx ? "scale-110" : ""
-                  }`}
+                  )} flex items-center justify-center mb-6 transition-transform ${hoveredCard === idx ? "scale-110" : ""
+                    }`}
                 >
                   <feature.icon className="w-7 h-7" />
                 </div>

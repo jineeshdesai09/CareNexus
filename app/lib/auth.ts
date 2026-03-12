@@ -24,7 +24,7 @@ export async function requireAdmin() {
   });
 
   if (!user || user.Role !== "ADMIN") {
-    redirect("/dashboard");
+    redirect("/login");
   }
 
   return user;
@@ -68,6 +68,7 @@ export async function getCurrentUser() {
     select: {
       UserID: true,
       Name: true,
+      Email: true,
       Role: true,
     },
   });

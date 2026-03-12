@@ -18,7 +18,7 @@ export async function GET() {
 
   const hashed = await bcrypt.hash("doctor123", 10);
 
-  await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       Name: "Doctor User",
       Email: "doctor@hospital.com",
@@ -26,6 +26,25 @@ export async function GET() {
       Role: "DOCTOR",
     },
   });
+
+  const hospital = await prisma.hospital.findFirst();
+  if (hospital) {
+    await prisma.doctor.create({
+      data: {
+        FirstName: "Doctor",
+        LastName: "User",
+        Gender: "Male",
+        MobileNo: "9876543210",
+        Email: "doctor@hospital.com",
+        RegistrationNo: "REG12345",
+        Specialization: "General Physician",
+        Department: "General Medicine",
+        ConsultationFee: 500,
+        HospitalID: hospital.HospitalID,
+        UserID: newUser.UserID
+      }
+    });
+  }
 
   return NextResponse.json({
     message: "Doctor user created",

@@ -1,11 +1,20 @@
-import { Heart, ArrowLeft, LogIn } from "lucide-react";
-import { login } from "@/app/actions/auth";
-import { getSession } from "@/app/lib/session";
+import { Heart, ArrowLeft } from "lucide-react";
+import { getCurrentUser } from "@/app/lib/auth";
 import { redirect } from "next/navigation";
-
-export default async function LoginPage({ searchParams }: any) {
-  const session = await getSession();
-  if (session) redirect("/dashboard");
+import LoginForm from "./LoginForm";
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; message?: string }>;
+}) {
+  const user = await getCurrentUser();
+  if (user) {
+    if (user.Role === "ADMIN") redirect("/admin/dashboard");
+    if (user.Role === "DOCTOR") redirect("/doctor/dashboard");
+    if (user.Role === "RECEPTIONIST") redirect("/reception/dashboard");
+    if (user.Role === "PATIENT") redirect("/patient/dashboard");
+    redirect("/"); // Fallback
+  }
 
   const params = await searchParams;
 
@@ -37,96 +46,45 @@ export default async function LoginPage({ searchParams }: any) {
       <div className="flex items-center justify-center px-6 py-16">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-2xl shadow-xl p-8">
-          
+
             {params?.error === "invalid" && (
-              <div className="rounded bg-red-100 text-red-800 px-4 py-2 text-sm mb-4">
+              <div className="rounded bg-red-100 text-red-800 px-4 py-2 text-sm mb-4 font-medium">
                 Invalid email or password
               </div>
             )}
 
             {params?.error === "role" && (
-              <div className="rounded bg-yellow-100 text-yellow-800 px-4 py-2 text-sm mb-4">
+              <div className="rounded bg-yellow-100 text-yellow-800 px-4 py-2 text-sm mb-4 font-medium">
                 Selected role does not match your account
               </div>
             )}
 
-            
-            <form action={login} className="space-y-6">
-              {/* Email */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Email
-                </label>
-                <input
-                  name="email"
-                  type="email"
-                  required
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
+            {params?.error === "pending" && (
+              <div className="rounded bg-blue-100 text-blue-800 px-4 py-2 text-sm mb-4 font-medium">
+                Your account is pending admin approval. Please try again later.
               </div>
+            )}
 
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Password
-                </label>
-                <input
-                  name="password"
-                  type="password"
-                  required
-                  placeholder="Enter your Password"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                />
+            {/* Registration success message */}
+            {(await searchParams).message === "registered" && (
+              <div className="rounded bg-green-100 text-green-800 px-4 py-2 text-sm mb-4 font-medium">
+                Registration successful! Please wait for admin approval.
               </div>
+            )}
 
-              {/* Role Select */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Select Role
-                </label>
-                <select
-                  name="role"
-                  required
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg 
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 placeholder:text-gray-400"
-                >
-                  <option value="">Select Role</option>
-                  <option value="ADMIN">Admin</option>
-                  <option value="DOCTOR">Doctor</option>
-                  <option value="RECEPTIONIST">Receptionist</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg 
-                hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl"
-              >
-                Login
-              </button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  className="text-blue-600 hover:text-blue-700 font-medium text-sm"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            </form>
+            <LoginForm />
 
             {/* Demo Access */}
-            <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
-              <p className="text-sm font-semibold text-gray-700 mb-2">
-                Demo Access OF Admin:
+            <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100 space-y-3">
+              <p className="text-sm font-bold text-gray-800 border-b pb-1 border-blue-200">
+                Support / Demo Credentials:
               </p>
-              <ul className="text-sm text-blue-600 space-y-1">
-                <li>• Email: admin@hospital.com</li>
-                <li>• Password: admin123</li>
-              </ul>
+
+              <div className="text-[10px] text-gray-600 space-y-2">
+                <p>Email: <span className="font-semibold text-blue-600">admin@hospital.com</span> (Pass: admin123)</p>
+                <p>Email: <span className="font-semibold text-blue-600">reception@hospital.com</span> (Pass: reception123)</p>
+                <p>Email: <span className="font-semibold text-blue-600">sarah.jenkins@hospital.com</span> (Pass: doctor123)</p>
+              </div>
             </div>
           </div>
         </div>

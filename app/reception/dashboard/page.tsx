@@ -36,7 +36,7 @@ export default async function ReceptionDashboard() {
         </a>
 
         <a
-          href="/reception/billing"
+          href="/reception/opd/queue"
           className="block bg-white p-4 rounded shadow hover:bg-gray-50"
         >
           Billing / Receipt

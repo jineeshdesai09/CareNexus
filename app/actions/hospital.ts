@@ -29,5 +29,5 @@ export async function updateHospital(formData: FormData) {
     },
   });
 
-  redirect("/hospital?success=1");
+  redirect("/admin/hospital?success=1");
 }
