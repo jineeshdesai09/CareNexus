@@ -61,10 +61,10 @@ export default async function DoctorListPage() {
                     </Link>
 
                     <Link
-                      href={`/doctors/${d.DoctorID}/availability`}
+                      href={`/admin/doctors/${d.DoctorID}/schedule`}
                       className="text-green-600 hover:text-green-800 font-medium transition"
                     >
-                      Availability
+                      View Schedule
                     </Link>
                   </td>
                 </tr>

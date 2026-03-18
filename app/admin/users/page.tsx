@@ -3,6 +3,7 @@ import { requireAdmin } from "@/app/lib/auth";
 import { updateUserStatus, deleteUser } from "@/app/actions/user";
 import { UserCheck, UserX, Clock, ShieldCheck, User, Trash2 } from "lucide-react";
 import { formatDate } from "@/app/lib/utils/date";
+import Link from "next/link";
 
 export const runtime = "nodejs";
 
@@ -131,7 +132,13 @@ export default async function UserManagementPage() {
                                     <td className="px-8 py-5 text-center text-sm font-medium text-slate-500">
                                         {formatDate(user.Created)}
                                     </td>
-                                    <td className="px-8 py-5 text-right">
+                                    <td className="px-8 py-5 text-right flex items-center justify-end gap-2">
+                                        <Link 
+                                            href={`/admin/users/${user.UserID}/edit`}
+                                            className="p-2 text-slate-400 hover:text-blue-600 transition-colors"
+                                        >
+                                            <ShieldCheck className="w-4 h-4" />
+                                        </Link>
                                         <form action={async () => {
                                             "use server";
                                             await deleteUser(user.UserID);

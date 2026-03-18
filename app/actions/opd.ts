@@ -2,10 +2,16 @@
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/app/lib/session";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function createOPD(formData: FormData) {
   const userId = await getSession();
   if (!userId) throw new Error("Unauthorized");
+
+  // Only receptionists can create OPD records from the reception flow
+  const caller = await prisma.user.findUnique({ where: { UserID: userId } });
+  if (!caller || caller.Role !== "RECEPTIONIST") throw new Error("Forbidden: Only receptionists can create OPD records");
 
   const patientId = Number(formData.get("PatientID"));
   const doctorId = Number(formData.get("DoctorID"));
@@ -13,87 +19,126 @@ export async function createOPD(formData: FormData) {
   const isFollowUp = formData.get("IsFollowUpCase") === "on";
   const description = String(formData.get("Description") ?? "");
 
+  const weight = formData.get("Weight") ? Number(formData.get("Weight")) : null;
+  const spo2 = formData.get("SpO2") ? Number(formData.get("SpO2")) : null;
+  const height = formData.get("Height") ? Number(formData.get("Height")) : null;
+
   if (!patientId || !doctorId) {
     throw new Error("Patient and Doctor required");
   }
 
 
-  let tokenNo: number;
+  await prisma.$transaction(async (tx) => {
+    let tokenNo: number;
 
-  if (isEmergency) {
-    // Emergency always gets highest priority
-    tokenNo = 0;
-  } else {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
 
-    const lastToken = await prisma.oPD.findFirst({
-      where: {
-        TreatedByDoctorID: doctorId,
-        OPDDateTime: { gte: startOfDay },
-        IsEmergency: false,
-      },
-      orderBy: { TokenNo: "desc" },
-      select: { TokenNo: true },
+    if (isEmergency) {
+      tokenNo = 0;
+    } else {
+      const lastToken = await tx.oPD.findFirst({
+        where: {
+          TreatedByDoctorID: doctorId,
+          OPDDateTime: { gte: startOfDay, lte: endOfDay },
+          IsEmergency: false,
+        },
+        orderBy: { TokenNo: "desc" },
+        select: { TokenNo: true },
+      });
+
+      tokenNo = (lastToken?.TokenNo || 0) + 1;
+    }
+
+    const hospital = await tx.hospital.findFirst();
+    const isFeeEnabled = hospital?.IsRegistrationFeeEnableInOPD ?? false;
+    const registrationFee = isFeeEnabled ? Number(hospital?.RegistrationCharge ?? 0) : 0;
+
+    const dailyCount = await tx.oPD.count({
+      where: { Created: { gte: startOfDay, lte: endOfDay } }
     });
 
-    tokenNo = lastToken?.TokenNo ? lastToken.TokenNo + 1 : 1;
-  }
+    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const baseNo = hospital?.OpeningOPDNo || 1000;
+    const opdNo = `OPD-${dateStr}-${baseNo + dailyCount + 1}`;
 
-  const hospital = await prisma.hospital.findFirst();
-  const registrationFee = hospital?.RegistrationCharge ? Number(hospital.RegistrationCharge) : 0;
+    // If height is provided, update patient record
+    if (height) {
+      await tx.patient.update({
+        where: { PatientID: patientId },
+        data: { Height: height }
+      });
+    }
 
-  await prisma.oPD.create({
-    data: {
-      OPDDateTime: new Date(),
-      TokenNo: tokenNo,
-
-      Status: "WAITING",
-      IsEmergency: isEmergency,
-      IsFollowUpCase: isFollowUp,
-      Description: description,
-
-      PatientID: patientId,
-      TreatedByDoctorID: doctorId,
-
-      RegistrationFee: registrationFee,
-      UserID: userId,
-    },
+    await tx.oPD.create({
+      data: {
+        OPDNo: opdNo,
+        OPDDateTime: new Date(),
+        TokenNo: tokenNo,
+        Status: "WAITING",
+        IsEmergency: isEmergency,
+        IsFollowUpCase: isFollowUp,
+        Description: description,
+        PatientID: patientId,
+        TreatedByDoctorID: doctorId,
+        RegistrationFee: registrationFee,
+        UserID: userId,
+        Weight: weight,
+        SpO2: spo2,
+        Height: height
+      },
+    });
   });
+
+  revalidatePath("/reception/dashboard");
+  redirect("/reception/dashboard");
 }
 
 export async function finishConsultation(formData: FormData) {
   const userId = await getSession();
   if (!userId) throw new Error("Unauthorized");
 
+  // Only doctors can finish consultations
+  const caller = await prisma.user.findUnique({ where: { UserID: userId } });
+  if (!caller || caller.Role !== "DOCTOR") throw new Error("Forbidden: Only doctors can finish consultations");
+
   const opdId = Number(formData.get("OPDID"));
+
+  // Ownership check — look up doctor by UserID, then compare DoctorID on the OPD
+  const doctorProfile = await prisma.doctor.findFirst({ where: { UserID: userId } });
+  if (!doctorProfile) throw new Error("Doctor profile not found");
+
+  const existing = await prisma.oPD.findUnique({ where: { OPDID: opdId } });
+  if (!existing) throw new Error("OPD not found");
+  if (existing.TreatedByDoctorID !== doctorProfile.DoctorID) throw new Error("Forbidden: This is not your patient");
+
   const description = String(formData.get("Description") ?? "");
   const diagnoses = formData.getAll("diagnoses").map(Number);
 
-  const weight = formData.get("Weight") ? Number(formData.get("Weight")) : null;
-  const height = formData.get("Height") ? Number(formData.get("Height")) : null;
-  const temperature = formData.get("Temperature") ? Number(formData.get("Temperature")) : null;
-  const pulse = formData.get("Pulse") ? Number(formData.get("Pulse")) : null;
   const bpSystolic = formData.get("BP_Systolic") ? Number(formData.get("BP_Systolic")) : null;
   const bpDiastolic = formData.get("BP_Diastolic") ? Number(formData.get("BP_Diastolic")) : null;
-  const respRate = formData.get("RespRate") ? Number(formData.get("RespRate")) : null;
-  const spO2 = formData.get("SpO2") ? Number(formData.get("SpO2")) : null;
+  const temperature = formData.get("Temperature") ? Number(formData.get("Temperature")) : null;
+  const pulse = formData.get("Pulse") ? Number(formData.get("Pulse")) : null;
+
+  const followUpDateStr = formData.get("FollowUpDate") as string;
+  const followUpDate = followUpDateStr ? new Date(followUpDateStr) : null;
+
+  const isDraft = formData.get("isDraft") === "true";
 
   // Update OPD
   await prisma.oPD.update({
     where: { OPDID: opdId },
     data: {
-      Status: "COMPLETED",
-      ConsultationEnd: new Date(),
+      Status: isDraft ? "IN_CONSULTATION" : "COMPLETED",
+      ConsultationEnd: isDraft ? null : new Date(),
       Description: description,
-      Weight: weight,
-      Height: height,
-      Temperature: temperature,
-      Pulse: pulse,
       BP_Systolic: bpSystolic,
       BP_Diastolic: bpDiastolic,
-      RespRate: respRate,
-      SpO2: spO2,
+      Temperature: temperature,
+      Pulse: pulse,
+      FollowUpDate: followUpDate,
     },
   });
 
@@ -138,14 +183,14 @@ export async function finishConsultation(formData: FormData) {
     // Add medicines
     const medicinesData = [];
     for (let i = 0; i < medicineCount; i++) {
-      const medId = Number(formData.get(`med_id_${i}`));
-      if (medId) {
+      const medName = String(formData.get(`med_name_${i}`) || "");
+      if (medName) {
         medicinesData.push({
           PrescriptionID: prescription.PrescriptionID,
-          MedicineID: medId,
-          Dosage: String(formData.get(`med_dosage_${i}`)),
-          Frequency: String(formData.get(`med_freq_${i}`)),
-          Duration: String(formData.get(`med_dur_${i}`)),
+          MedicineName: medName,
+          Dosage: String(formData.get(`med_dosage_${i}`) || ""),
+          Frequency: String(formData.get(`med_freq_${i}`) || ""),
+          Duration: String(formData.get(`med_dur_${i}`) || ""),
           Instructions: String(formData.get(`med_inst_${i}`) || ""),
         });
       }
@@ -157,4 +202,9 @@ export async function finishConsultation(formData: FormData) {
       });
     }
   }
+
+  revalidatePath("/doctor/dashboard");
+  revalidatePath(`/doctor/opd/${opdId}`);
+  
+  redirect("/doctor/dashboard");
 }

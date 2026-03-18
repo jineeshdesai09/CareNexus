@@ -11,9 +11,10 @@ interface Patient {
     MobileNo: string;
     Age: number;
     Gender: string;
+    Height: number | null;
 }
 
-export default function PatientSearch() {
+export default function PatientSearch({ onSelect }: { onSelect?: (p: Patient | null) => void }) {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState<Patient[]>([]);
     const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -27,7 +28,7 @@ export default function PatientSearch() {
         setIsSearching(true);
         try {
             const data = await searchPatients(q);
-            setResults(data as Patient[]);
+            setResults(data as any as Patient[]);
         } catch (error) {
             console.error("Search failed:", error);
         } finally {
@@ -48,11 +49,13 @@ export default function PatientSearch() {
         setSelectedPatient(patient);
         setResults([]);
         setQuery("");
+        if (onSelect) onSelect(patient);
     };
 
     const handleClear = () => {
         setSelectedPatient(null);
         setQuery("");
+        if (onSelect) onSelect(null);
     };
 
     return (

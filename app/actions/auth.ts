@@ -5,7 +5,7 @@ import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { createSession } from "../lib/session";
 import { revalidatePath } from "next/cache";
-import { Role } from "../generated/prisma/enums";
+import { Role } from "@prisma/client";
 
 export async function login(formData: FormData) {
   const email = String(formData.get("email"));
@@ -56,7 +56,7 @@ export async function register(formData: FormData) {
   const password = String(formData.get("password"));
   const role = String(formData.get("role")) as Role;
   
-  if (role === "PHARMACIST" || role === "LAB_TECHNICIAN") {
+  if (["PHARMACIST", "LAB_TECHNICIAN", "ADMIN"].includes(role)) {
     redirect("/register?error=restricted");
   }
 

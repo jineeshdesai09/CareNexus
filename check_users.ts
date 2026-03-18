@@ -1,1 +1,0 @@
-import { PrismaClient } from "./app/generated/prisma"; const prisma = new PrismaClient(); async function main() { const users = await prisma.user.findMany({ select: { Email: true, Role: true, Status: true } }); console.log(JSON.stringify(users, null, 2)); } main();

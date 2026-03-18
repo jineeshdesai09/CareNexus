@@ -1,7 +1,7 @@
 "use client";
 
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { Printer } from "lucide-react";
 
 interface PrintPrescriptionButtonProps {
@@ -23,13 +23,12 @@ interface PrintPrescriptionButtonProps {
             Specialization: string;
             RegistrationNo: string;
         };
-        vitals: {
+        vitals?: {
             Weight: number | null;
             Height: number | null;
             BP: string | null;
             Temp: number | null;
             Pulse: number | null;
-            RespRate: number | null;
             SpO2: number | null;
         };
         medicines: Array<{
@@ -84,30 +83,36 @@ export default function PrintPrescriptionButton({ data }: PrintPrescriptionButto
         doc.line(15, 72, pageWidth - 15, 72);
 
         // 4. Vitals
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.text("VITALS", 15, 82);
+        let vitalsYOffset = 0;
+        if (data.vitals) {
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("VITALS", 15, 82);
 
-        const vitalsText = [
-            data.vitals.Weight ? `Weight: ${data.vitals.Weight}kg` : "",
-            data.vitals.Height ? `Height: ${data.vitals.Height}cm` : "",
-            data.vitals.BP ? `BP: ${data.vitals.BP}` : "",
-            data.vitals.Temp ? `Temp: ${data.vitals.Temp}°F` : "",
-            data.vitals.Pulse ? `Pulse: ${data.vitals.Pulse}bpm` : "",
-        ].filter(Boolean).join("  |  ");
+            const vitalsText = [
+                data.vitals.Weight ? `Weight: ${data.vitals.Weight}kg` : "",
+                data.vitals.Height ? `Height: ${data.vitals.Height}cm` : "",
+                data.vitals.BP ? `BP: ${data.vitals.BP}` : "",
+                data.vitals.Temp ? `Temp: ${data.vitals.Temp}°C` : "",
+                data.vitals.Pulse ? `Pulse: ${data.vitals.Pulse}bpm` : "",
+                data.vitals.SpO2 ? `SpO2: ${data.vitals.SpO2}%` : "",
+            ].filter(Boolean).join("  |  ");
 
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-        doc.text(vitalsText || "N/A", 15, 88);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(vitalsText || "N/A", 15, 88);
+            vitalsYOffset = 20;
+        }
 
         // 5. Prescription (RX)
         doc.setFontSize(16);
         doc.setFont("helvetica", "bold");
-        doc.text("Rx", 15, 105);
+        doc.text("Rx", 15, 85 + vitalsYOffset);
 
+        let finalY = 90 + vitalsYOffset;
         if (data.medicines.length > 0) {
-            (doc as any).autoTable({
-                startY: 110,
+            const result = autoTable(doc, {
+                startY: 90 + vitalsYOffset,
                 head: [['Medicine', 'Dosage', 'Frequency', 'Duration', 'Instructions']],
                 body: data.medicines.map(m => [
                     m.name,
@@ -120,13 +125,14 @@ export default function PrintPrescriptionButton({ data }: PrintPrescriptionButto
                 headStyles: { fillColor: [41, 128, 185] },
                 margin: { left: 15, right: 15 }
             });
+            finalY = (result as any).lastAutoTable?.finalY || (90 + vitalsYOffset);
         } else {
             doc.setFontSize(10);
             doc.text("No medications prescribed.", 15, 115);
+            finalY = 120;
         }
 
         // 6. Notes
-        let finalY = (doc as any).lastAutoTable?.finalY || 120;
         if (data.notes) {
             doc.setFontSize(12);
             doc.setFont("helvetica", "bold");

@@ -9,6 +9,10 @@ export async function createDoctor(formData: FormData) {
   const userId = await getSession();
   if (!userId) throw new Error("Unauthorized");
 
+  // Only admins can create doctors
+  const caller = await prisma.user.findUnique({ where: { UserID: userId } });
+  if (!caller || caller.Role !== "ADMIN") throw new Error("Forbidden: Admin only");
+
   const hospital = await prisma.hospital.findFirst();
   if (!hospital) throw new Error("Hospital not configured");
 
@@ -69,6 +73,10 @@ export async function updateDoctor(formData: FormData) {
   const userId = await getSession();
   if (!userId) throw new Error("Unauthorized");
 
+  // Only admins can update doctors
+  const caller = await prisma.user.findUnique({ where: { UserID: userId } });
+  if (!caller || caller.Role !== "ADMIN") throw new Error("Forbidden: Admin only");
+
   const doctorId = Number(formData.get("DoctorID"));
 
   await prisma.doctor.update({
@@ -98,3 +106,71 @@ export async function updateDoctor(formData: FormData) {
 
   redirect("/admin/doctors");
 }
+
+export async function searchDoctorPatients(params: {
+  query?: string;
+  gender?: string;
+  ageMin?: number;
+  ageMax?: number;
+}) {
+  const userId = await getSession();
+  if (!userId) throw new Error("Unauthorized");
+
+  const doctor = await prisma.doctor.findFirst({
+    where: { UserID: userId },
+  });
+
+  if (!doctor) throw new Error("Doctor profile not found");
+
+  const { query, gender, ageMin, ageMax } = params;
+
+  // Find OPDs for this doctor that match patient filters
+  const opds = await prisma.oPD.findMany({
+    where: {
+      TreatedByDoctorID: doctor.DoctorID,
+      Patient: {
+        AND: [
+          query ? {
+            OR: [
+              { PatientName: { contains: query, mode: "insensitive" } },
+              { MobileNo: { contains: query } },
+              { PatientNo: isNaN(Number(query)) ? undefined : Number(query) },
+            ].filter(Boolean) as any
+          } : {},
+          gender && gender !== "all" ? { Gender: gender } : {},
+          ageMin ? { Age: { gte: ageMin } } : {},
+          ageMax ? { Age: { lte: ageMax } } : {},
+        ]
+      }
+    },
+    include: {
+      Patient: true,
+    },
+    orderBy: { OPDDateTime: "desc" },
+  });
+
+  // Deduplicate to get unique patients with their latest visit and next follow-up
+  const uniquePatientsMap = new Map();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  opds.forEach((opd) => {
+    if (!uniquePatientsMap.has(opd.Patient.PatientID)) {
+      uniquePatientsMap.set(opd.Patient.PatientID, {
+        ...opd.Patient,
+        lastVisit: opd.OPDDateTime,
+        upcomingFollowUp: null,
+      });
+    }
+
+    const patientData = uniquePatientsMap.get(opd.Patient.PatientID);
+    if (opd.FollowUpDate && new Date(opd.FollowUpDate) >= today) {
+      if (!patientData.upcomingFollowUp || new Date(opd.FollowUpDate) < new Date(patientData.upcomingFollowUp)) {
+        patientData.upcomingFollowUp = opd.FollowUpDate;
+      }
+    }
+  });
+
+  return Array.from(uniquePatientsMap.values());
+}
+

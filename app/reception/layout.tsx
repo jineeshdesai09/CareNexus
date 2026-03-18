@@ -24,6 +24,7 @@ export default async function ReceptionLayout({
           <Link href="/reception/patients" className="block p-2 hover:bg-gray-800 rounded transition-colors">Patient Registration</Link>
           <Link href="/reception/opd/create" className="block p-2 hover:bg-gray-800 rounded transition-colors">Assign OPD (Token)</Link>
           <Link href="/reception/opd/queue" className="block p-2 hover:bg-gray-800 rounded transition-colors">OPD Queue & Billing</Link>
+          <Link href="/reception/status" className="block p-2 hover:bg-blue-600 bg-blue-700/20 text-blue-400 rounded transition-colors font-bold">📺 Live Status Screen</Link>
           <Link href="/reception/staff/add" className="block p-2 hover:bg-gray-800 rounded transition-colors">Staff Management</Link>
         </nav>
 

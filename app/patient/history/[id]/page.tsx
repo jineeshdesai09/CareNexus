@@ -9,7 +9,18 @@ import {
   ArrowLeft,
   Calendar,
   ClipboardList,
-  Info
+  Info,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Heart,
+  Thermometer,
+  Scale,
+  Ruler,
+  Droplets,
+  Wind,
+  MessageSquare,
+  FlaskConical
 } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/app/lib/utils/date";
@@ -17,6 +28,61 @@ import PrintPrescriptionButton from "@/app/doctor/opd/[id]/PrintPrescriptionButt
 import PrintReceiptButton from "@/app/reception/billing/[opdId]/PrintReceiptButton";
 
 export const runtime = "nodejs";
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode; description: string }> = {
+  REGISTERED: {
+    label: "Appointment Confirmed",
+    color: "text-blue-700",
+    bg: "bg-blue-50 border-blue-200",
+    icon: <Clock className="w-5 h-5" />,
+    description: "Your appointment is confirmed. Please arrive at the hospital on the scheduled date. Medical summary will be available after your consultation.",
+  },
+  WAITING: {
+    label: "In Queue",
+    color: "text-yellow-700",
+    bg: "bg-yellow-50 border-yellow-200",
+    icon: <Clock className="w-5 h-5" />,
+    description: "You are currently in the waiting queue. Please wait to be called in.",
+  },
+  IN_CONSULTATION: {
+    label: "Consultation In Progress",
+    color: "text-indigo-700",
+    bg: "bg-indigo-50 border-indigo-200",
+    icon: <Stethoscope className="w-5 h-5" />,
+    description: "Your consultation is currently in progress.",
+  },
+  COMPLETED: {
+    label: "Consultation Completed",
+    color: "text-green-700",
+    bg: "bg-green-50 border-green-200",
+    icon: <CheckCircle2 className="w-5 h-5" />,
+    description: "Your consultation is complete. See your medical summary below.",
+  },
+  BILLED: {
+    label: "Billed & Complete",
+    color: "text-green-700",
+    bg: "bg-green-50 border-green-200",
+    icon: <CheckCircle2 className="w-5 h-5" />,
+    description: "Consultation complete and payment received.",
+  },
+  CLOSED: {
+    label: "Closed",
+    color: "text-gray-700",
+    bg: "bg-gray-50 border-gray-200",
+    icon: <CheckCircle2 className="w-5 h-5" />,
+    description: "This visit has been closed.",
+  },
+  CANCELLED: {
+    label: "Appointment Cancelled",
+    color: "text-red-700",
+    bg: "bg-red-50 border-red-200",
+    icon: <AlertCircle className="w-5 h-5" />,
+    description: "This appointment was cancelled. Please book a new appointment if needed.",
+  },
+};
+
+const isCompleted = (status: string) =>
+  ["COMPLETED", "BILLED", "CLOSED"].includes(status);
 
 export default async function PatientVisitDetails({
   params
@@ -58,6 +124,13 @@ export default async function PatientVisitDetails({
             include: { SubTreatmentType: true }
           }
         }
+      },
+      LabOrders: {
+        include: {
+          Items: {
+            include: { Test: true }
+          }
+        }
       }
     }
   });
@@ -68,233 +141,426 @@ export default async function PatientVisitDetails({
 
   const hospital = await prisma.hospital.findFirst();
   const latestReceipt = opd.Receipts[0];
+  const statusConfig = STATUS_CONFIG[opd.Status] ?? STATUS_CONFIG.CLOSED;
+  const completed = isCompleted(opd.Status);
 
   return (
-    <div className="space-y-8 animate-in mt-2 fade-in slide-in-from-bottom-4 duration-700">
-      <div className="flex items-center justify-between">
-        <Link 
-          href="/patient/history" 
-          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to History
-        </Link>
+    <div className="space-y-8 animate-in mt-2 fade-in slide-in-from-bottom-4 duration-700 pb-20">
+      {/* Header & Actions */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <Link 
+            href="/patient/history" 
+            className="inline-flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors font-bold mb-2 group"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Medical History
+          </Link>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">Visit Details</h1>
+        </div>
         
-        <div className="flex gap-3">
-          {opd.prescription && (
-             <PrintPrescriptionButton 
-               data={{
-                 hospital: {
-                    HospitalName: hospital?.HospitalName || "Hospital",
-                    Address: hospital?.Address || "",
-                    Description: hospital?.Description || ""
-                 },
-                 patient: patient,
-                 doctor: opd.Doctor,
-                 vitals: {
-                    Weight: opd.Weight ? Number(opd.Weight.toString()) : null,
-                    Height: opd.Height ? Number(opd.Height.toString()) : null,
-                    BP: opd.BP_Systolic ? `${opd.BP_Systolic}/${opd.BP_Diastolic}` : null,
-                    Temp: opd.Temperature ? Number(opd.Temperature.toString()) : null,
-                    Pulse: opd.Pulse,
-                    RespRate: opd.RespRate,
-                    SpO2: opd.SpO2,
-                 },
-                 medicines: opd.prescription.Medicines.map(m => ({
-                    name: m.Medicine.Name,
-                    dosage: m.Dosage,
-                    frequency: m.Frequency,
-                    duration: m.Duration,
-                    instructions: m.Instructions
-                 })),
-                 notes: opd.prescription.Notes || opd.Description,
-                 date: formatDate(opd.OPDDateTime)
-               }} 
-             />
-          )}
-          {latestReceipt && (
-            <PrintReceiptButton 
-               data={{
-                 hospital: {
-                   HospitalName: hospital?.HospitalName || "Hospital",
-                   Address: hospital?.Address || null,
-                   Phone: "N/A"
-                 },
-                 receipt: {
-                   ReceiptNo: latestReceipt.ReceiptNo || "N/A",
-                   ReceiptDate: formatDate(latestReceipt.ReceiptDate),
-                   AmountPaid: Number(latestReceipt.AmountPaid.toString()),
-                   Description: latestReceipt.Description
-                 },
-                 patient: {
-                   PatientName: patient.PatientName,
-                   PatientNo: patient.PatientNo
-                 },
-                 items: latestReceipt.ReceiptTrans.map(tr => ({
-                   name: tr.SubTreatmentType.SubTreatmentTypeName,
-                   rate: Number(tr.Amount.toString()),
-                   quantity: 1,
-                   amount: Number(tr.Amount.toString())
-                 })),
-                 registrationFee: Number(opd.RegistrationFee?.toString() || "0")
-               }}
-            />
-          )}
+        {completed && (
+          <div className="flex flex-wrap gap-3">
+            {opd.prescription && (
+               <PrintPrescriptionButton 
+                 data={{
+                   hospital: {
+                      HospitalName: hospital?.HospitalName || "Hospital",
+                      Address: hospital?.Address || "",
+                      Description: hospital?.Description || ""
+                   },
+                   patient: patient,
+                   doctor: {
+                     FirstName: opd.Doctor.FirstName,
+                     LastName: opd.Doctor.LastName,
+                     Specialization: opd.Doctor.Specialization,
+                     RegistrationNo: opd.Doctor.RegistrationNo,
+                   },
+                   vitals: {
+                      Weight: opd.Weight ? Number(opd.Weight.toString()) : null,
+                      Height: opd.Height ? Number(opd.Height.toString()) : null,
+                      BP: opd.BP_Systolic ? `${opd.BP_Systolic}/${opd.BP_Diastolic}` : null,
+                      Temp: opd.Temperature ? Number(opd.Temperature.toString()) : null,
+                      Pulse: opd.Pulse,
+                      RespRate: opd.RespRate,
+                      SpO2: opd.SpO2,
+                   },
+                   medicines: opd.prescription.Medicines.map(m => ({
+                      name: m.Medicine?.Name || m.MedicineName || "Unknown Medicine",
+                      dosage: m.Dosage,
+                      frequency: m.Frequency,
+                      duration: m.Duration,
+                      instructions: m.Instructions
+                   })),
+                   notes: opd.prescription.Notes || opd.Description,
+                   date: formatDate(opd.OPDDateTime)
+                 }} 
+               />
+            )}
+            {latestReceipt && (
+              <PrintReceiptButton 
+                 data={{
+                   hospital: {
+                     HospitalName: hospital?.HospitalName || "Hospital",
+                     Address: hospital?.Address || null,
+                     Phone: "N/A"
+                   },
+                   receipt: {
+                     ReceiptNo: latestReceipt.ReceiptNo || "N/A",
+                     ReceiptDate: formatDate(latestReceipt.ReceiptDate),
+                     AmountPaid: Number(latestReceipt.AmountPaid.toString()),
+                     Description: latestReceipt.Description
+                   },
+                   patient: {
+                     PatientName: patient.PatientName,
+                     PatientNo: patient.PatientNo
+                   },
+                   items: latestReceipt.ReceiptTrans.map(tr => ({
+                     name: tr.SubTreatmentType.SubTreatmentTypeName,
+                     rate: Number(tr.Amount.toString()),
+                     quantity: 1,
+                     amount: Number(tr.Amount.toString())
+                   })),
+                   registrationFee: Number(opd.RegistrationFee?.toString() || "0")
+                 }}
+              />
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Status Banner */}
+      <div className={`flex items-start gap-4 p-6 rounded-3xl border shadow-sm ${statusConfig.bg}`}>
+        <div className={`p-3 rounded-2xl bg-white shadow-sm ${statusConfig.color}`}>{statusConfig.icon}</div>
+        <div>
+          <p className={`font-black text-lg ${statusConfig.color}`}>{statusConfig.label}</p>
+          <p className={`text-sm mt-1 font-medium ${statusConfig.color} opacity-80 leading-relaxed`}>{statusConfig.description}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Clinical Info */}
+        {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Header Info */}
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-bl-full -z-0 opacity-50" />
-            <div className="flex items-start gap-6 relative z-10">
-              <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-600">
-                <Stethoscope className="w-10 h-10" />
+          
+          {/* Consultant Information */}
+          <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-blue-50 rounded-full -mr-24 -mt-24 opacity-50" />
+            <div className="flex flex-col md:flex-row md:items-center gap-8 relative z-10">
+              <div className="w-24 h-24 bg-blue-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                <Stethoscope className="w-12 h-12" />
               </div>
-              <div>
-                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">Consulting Physician</p>
-                <h1 className="text-2xl font-black text-slate-900">Dr. {opd.Doctor.FirstName} {opd.Doctor.LastName}</h1>
-                <p className="text-slate-500 font-medium mb-4">{opd.Doctor.Specialization}</p>
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg text-slate-600 text-xs font-bold">
-                    <Calendar className="w-4 h-4" />
+              <div className="flex-1">
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-[0.2em] mb-2">Primary Consultant</p>
+                <h2 className="text-3xl font-black text-slate-900 mb-1">Dr. {opd.Doctor.FirstName} {opd.Doctor.LastName}</h2>
+                <p className="text-lg text-slate-500 font-bold mb-6">{opd.Doctor.Specialization}</p>
+                
+                <div className="flex flex-wrap gap-3">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl text-slate-700 text-sm font-bold border border-slate-100">
+                    <Calendar className="w-4 h-4 text-blue-500" />
                     {formatDate(opd.OPDDateTime)}
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-slate-50 rounded-lg text-slate-600 text-xs font-bold">
-                    <ClipboardList className="w-4 h-4" />
-                    Token #{opd.TokenNo}
+                  <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl text-slate-700 text-sm font-bold border border-slate-100">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    Token #{opd.TokenNo ?? "—"}
                   </div>
+                  {opd.OPDNo && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-2xl text-slate-700 text-sm font-bold border border-slate-100">
+                      ID: {opd.OPDNo}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Vitals Summary */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-             <div className="p-6 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-900">
-                <Activity className="w-5 h-5 text-red-500" />
-                Clinical Vitals
-             </div>
-             <div className="p-8 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                {[
-                  { label: "BP", value: opd.BP_Systolic && opd.BP_Diastolic ? `${opd.BP_Systolic}/${opd.BP_Diastolic}` : "--" },
-                  { label: "Pulse", value: opd.Pulse || "--" },
-                  { label: "Weight", value: opd.Weight ? `${opd.Weight} kg` : "--" },
-                  { label: "SpO2", value: opd.SpO2 ? `${opd.SpO2}%` : "--" },
-                ].map((stat) => (
-                  <div key={stat.label}>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{stat.label}</p>
-                    <p className="text-xl font-black text-slate-900">{stat.value}</p>
-                  </div>
-                ))}
-             </div>
-          </div>
-
-          {/* Diagnosis & Prescription */}
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-             <div className="p-6 border-b border-slate-100 flex items-center gap-2 font-bold text-slate-900">
-                <FileText className="w-5 h-5 text-blue-500" />
-                Medical Assessment
-             </div>
-             <div className="p-8 space-y-8">
-                {opd.Diagnoses.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Diagnosis</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {opd.Diagnoses.map((d) => (
-                        <span key={d.OPDDiagnosisTypeID} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-xl text-sm font-bold">
-                          {d.DiagnosisType.DiagnosisTypeName}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {opd.prescription ? (
-                  <div>
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Prescribed Medicines</h3>
-                    <div className="overflow-hidden border border-slate-50 rounded-2xl">
-                      <table className="w-full">
-                        <thead className="bg-slate-50">
-                          <tr>
-                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase">Medicine</th>
-                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase">Dosage</th>
-                            <th className="px-6 py-4 text-left text-[10px] font-bold text-slate-400 uppercase">Instruction</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50">
-                          {opd.prescription.Medicines.map((m) => (
-                            <tr key={m.ID}>
-                              <td className="px-6 py-4 text-sm font-bold text-slate-900">{m.Medicine.Name}</td>
-                              <td className="px-6 py-4 text-sm text-slate-500">{m.Dosage} ({m.Duration})</td>
-                              <td className="px-6 py-4 text-sm text-slate-400 font-medium italic">{m.Instructions || "N/A"}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-center py-8 text-slate-400 italic font-medium">No prescription record for this visit.</p>
-                )}
-             </div>
-          </div>
-        </div>
-
-        {/* Financial Info Sidebar */}
-        <div className="space-y-8">
-          <div className="bg-slate-900 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
-            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-blue-500 rounded-full opacity-10 blur-3xl" />
-            <Receipt className="w-10 h-10 text-blue-400 mb-6" />
-            <h2 className="text-lg font-bold mb-6">Billing Receipt</h2>
-            
-            {latestReceipt ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between py-2 border-b border-white/10">
-                  <span className="text-slate-400 text-sm font-bold">Grand Total</span>
-                  <span className="text-2xl font-black text-blue-400">₹{latestReceipt.AmountPaid.toString()}</span>
+          {completed && (
+            <>
+              {/* Clinical Items / Vitals */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 px-2">
+                  <Activity className="w-5 h-5 text-red-500" />
+                  <h3 className="text-xl font-black text-slate-900">Clinical Vitals</h3>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Reg. Fee</span>
-                    <span className="font-bold">₹{opd.RegistrationFee?.toString()}</span>
-                  </div>
-                  {latestReceipt.ReceiptTrans.map((tr) => (
-                    <div key={tr.ReceiptTranID} className="flex justify-between text-sm">
-                      <span className="text-slate-400 whitespace-nowrap overflow-hidden text-ellipsis mr-4">{tr.SubTreatmentType.SubTreatmentTypeName}</span>
-                      <span className="font-bold">₹{tr.Amount.toString()}</span>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: "Blood Pressure", value: opd.BP_Systolic && opd.BP_Diastolic ? `${opd.BP_Systolic}/${opd.BP_Diastolic}` : "—", unit: "mmHg", icon: Heart, color: "text-red-500", bg: "bg-red-50" },
+                    { label: "Temperature", value: opd.Temperature ? opd.Temperature.toString() : "—", unit: "°C", icon: Thermometer, color: "text-orange-500", bg: "bg-orange-50" },
+                    { label: "Pulse Rate", value: opd.Pulse ? opd.Pulse.toString() : "—", unit: "bpm", icon: Activity, color: "text-emerald-500", bg: "bg-emerald-50" },
+                    { label: "Weight", value: opd.Weight ? opd.Weight.toString() : "—", unit: "kg", icon: Scale, color: "text-blue-500", bg: "bg-blue-50" },
+                    { label: "Oxygen SpO2", value: opd.SpO2 ? opd.SpO2.toString() : "—", unit: "%", icon: Droplets, color: "text-cyan-500", bg: "bg-cyan-50" },
+                    { label: "Height", value: (opd.Height || patient.Height) ? (opd.Height || patient.Height)?.toString() : "—", unit: "cm", icon: Ruler, color: "text-indigo-500", bg: "bg-indigo-50" },
+                  ].map((stat) => (
+                    <div key={stat.label} className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex flex-col items-center text-center group hover:border-slate-200 transition-colors">
+                      <div className={`w-10 h-10 ${stat.bg} ${stat.color} rounded-xl flex items-center justify-center mb-3`}>
+                        <stat.icon className="w-5 h-5" />
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                      <p className="text-xl font-black text-slate-900 leading-none">{stat.value}</p>
+                      {stat.value !== "—" && <p className="text-[10px] font-bold text-slate-400 mt-1">{stat.unit}</p>}
                     </div>
                   ))}
                 </div>
-                <div className="pt-4">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 text-center">Status: Paid</p>
+              </div>
+
+              {/* Medical Assessment Section */}
+              <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+                  <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900">Clinical Assessment</h3>
+                </div>
+                
+                <div className="p-8 space-y-10">
+                  {/* Doctor's Notes */}
+                  {opd.Description && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <MessageSquare className="w-4 h-4" />
+                        <h4 className="text-xs font-bold uppercase tracking-[0.2em]">Consultation Summary</h4>
+                      </div>
+                      <div className="bg-slate-50 rounded-3xl p-6 relative">
+                        <span className="absolute top-4 left-4 text-4xl text-slate-200 font-serif font-black leading-none">“</span>
+                        <p className="text-slate-700 text-base font-bold leading-relaxed relative z-10 pl-4">{opd.Description}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Diagnoses */}
+                  {opd.Diagnoses.length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Confirmed Diagnoses</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {opd.Diagnoses.map((d) => (
+                          <span key={d.OPDDiagnosisTypeID} className="px-5 py-2.5 bg-blue-50 text-blue-700 rounded-2xl text-sm font-black border border-blue-100">
+                            {d.DiagnosisType.DiagnosisTypeName}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Prescription List */}
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Medication Plan</h4>
+                    {opd.prescription ? (
+                      <div className="space-y-6">
+                        <div className="overflow-x-auto border border-slate-100 rounded-[2rem]">
+                          <table className="w-full min-w-[600px]">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-100">
+                                <th className="px-6 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Medicine</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dosage</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Frequency</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Duration</th>
+                                <th className="px-6 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Instructions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                              {opd.prescription.Medicines.map((m) => (
+                                <tr key={m.ID} className="hover:bg-slate-50/50 transition-colors">
+                                  <td className="px-6 py-6">
+                                    <p className="text-sm font-black text-slate-900">
+                                      {m.Medicine?.Name || m.MedicineName || "Unknown Medicine"}
+                                    </p>
+                                  </td>
+                                  <td className="px-6 py-6 text-center">
+                                    <span className="inline-block text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl">
+                                      {m.Dosage}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-6 text-center">
+                                    <span className="inline-block text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+                                      {m.Frequency}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-6 text-center">
+                                    <span className="inline-block text-xs font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-100">
+                                      {m.Duration}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-6 text-right">
+                                    <span className="inline-block text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-2xl border border-emerald-100">
+                                      {m.Instructions || "As directed"}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {opd.prescription.Notes && (
+                          <div className="bg-amber-50 rounded-2xl p-5 border border-amber-100 flex items-start gap-3">
+                            <Info className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                            <p className="text-sm text-amber-800 font-bold leading-relaxed">{opd.prescription.Notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-10 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+                        <p className="text-slate-400 font-bold italic">No medications prescribed for this visit.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Lab Investigations Section */}
+              {opd.LabOrders.length > 0 && (
+                <div className="bg-white rounded-[2rem] shadow-sm border border-slate-100 overflow-hidden">
+                  <div className="p-8 border-b border-slate-50 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center">
+                      <FlaskConical className="w-5 h-5" />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900">Lab Investigations</h3>
+                  </div>
+                  <div className="p-8 space-y-10">
+                    {opd.LabOrders.map((order) => (
+                      <div key={order.OrderID} className="space-y-6">
+                        <div className="flex items-center justify-between px-2">
+                          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Order #{order.OrderID} • {formatDate(order.OrderDate)}</h4>
+                          <span className={`px-4 py-1.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border ${
+                            order.Status === 'COMPLETED' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-amber-50 text-amber-700 border-amber-100'
+                          }`}>
+                            {order.Status.replace('_', ' ')}
+                          </span>
+                        </div>
+                        <div className="overflow-x-auto border border-slate-100 rounded-[2rem]">
+                          <table className="w-full min-w-[500px]">
+                            <thead>
+                              <tr className="bg-slate-50 border-b border-slate-100">
+                                <th className="px-6 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Test Name</th>
+                                <th className="px-6 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Result</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50">
+                              {order.Items.map((item) => (
+                                <tr key={item.OrderItemID} className="hover:bg-slate-50/50 transition-colors">
+                                  <td className="px-6 py-6">
+                                    <p className="text-sm font-black text-slate-900">{item.Test.TestName}</p>
+                                  </td>
+                                  <td className="px-6 py-6 text-center">
+                                    <span className={`inline-block text-[10px] font-black px-3 py-1.5 rounded-xl border ${
+                                      item.Status === 'COMPLETED' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-slate-50 text-slate-400 border-slate-100'
+                                    }`}>
+                                      {item.Status.replace('_', ' ')}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-6 text-right">
+                                    {item.ResultValue ? (
+                                      <p className="text-sm font-black text-blue-600">{item.ResultValue}</p>
+                                    ) : (
+                                      <p className="text-xs text-slate-400 font-bold italic">Pending</p>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        {order.Notes && (
+                          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100">
+                             <p className="text-xs text-slate-500 font-bold"><span className="text-slate-400 uppercase tracking-widest mr-2">Clinician Note:</span> {order.Notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Sidebar content */}
+        <div className="space-y-8">
+          {/* Billing Card */}
+          <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden">
+            <div className="absolute -bottom-8 -right-8 w-40 h-40 bg-blue-500 rounded-full opacity-20 blur-3xl" />
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-transparent opacity-50" />
+            
+            <Receipt className="w-12 h-12 text-blue-400 mb-8" />
+            <h2 className="text-xl font-black mb-8 tracking-tight">Financial Summary</h2>
+            
+            {latestReceipt ? (
+              <div className="space-y-8">
+                <div className="pb-6 border-b border-white/10">
+                  <span className="text-slate-400 text-xs font-black uppercase tracking-widest block mb-2">Grand Total</span>
+                  <span className="text-4xl font-black text-blue-400 tracking-tight">₹{latestReceipt.AmountPaid.toString()}</span>
+                </div>
+                
+                <div className="space-y-5">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-400 font-bold">Registration</span>
+                    <span className="font-black">₹{opd.RegistrationFee?.toString()}</span>
+                  </div>
+                  {latestReceipt.ReceiptTrans.map((tr) => (
+                    <div key={tr.ReceiptTranID} className="flex justify-between items-center text-sm">
+                      <span className="text-slate-400 font-bold whitespace-nowrap overflow-hidden text-ellipsis mr-4">{tr.SubTreatmentType.SubTreatmentTypeName}</span>
+                      <span className="font-black">₹{tr.Amount.toString()}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Transaction Success</span>
+                  </div>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                 </div>
               </div>
             ) : (
-              <div className="py-8 text-center text-slate-500">
-                <p className="text-sm font-bold">Billing not yet generated.</p>
+              <div className="py-12 text-center text-slate-500 space-y-4">
+                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto">
+                  <Clock className="w-8 h-8 opacity-20" />
+                </div>
+                <p className="text-sm font-bold opacity-50">Settlement in progress...</p>
               </div>
             )}
           </div>
 
-          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
-             <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400">
-                   <Info className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-slate-900">Need Help?</h3>
-             </div>
-             <p className="text-sm text-slate-500 leading-relaxed mb-6 font-medium">
-               If you have any questions regarding your prescription or medical reports, please contact the hospital admin.
-             </p>
-             <button className="w-full py-4 bg-slate-100 text-slate-900 rounded-2xl font-black text-sm hover:bg-slate-200 transition-colors uppercase tracking-widest">
-               Contact Support
-             </button>
+          {/* Help Card */}
+          <div className="bg-white rounded-[2rem] p-8 border border-slate-100 shadow-sm">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 shadow-inner">
+                <Info className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-black text-slate-900 tracking-tight">Visit Support</h3>
+            </div>
+            <p className="text-sm text-slate-500 leading-relaxed mb-8 font-bold">
+              If you notice any discrepancies in your prescription or need clarification on the diagnosis, our medical support team is here to help.
+            </p>
+            <button className="w-full py-4 bg-slate-50 hover:bg-slate-100 text-slate-900 font-black rounded-2xl transition-colors text-sm shadow-sm border border-slate-100">
+              Contact Hospital
+            </button>
           </div>
         </div>
       </div>
+
+      {!completed && (
+        /* Pending state placeholder */
+        <div className="bg-white rounded-[3rem] p-20 text-center border border-slate-100 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-2 bg-blue-600 opacity-10" />
+          <div className="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mx-auto mb-8 shadow-inner">
+            <FileText className="w-12 h-12" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-900 mb-3">Record Generation in Progress</h2>
+          <p className="text-slate-500 max-w-md mx-auto text-base font-bold leading-relaxed mb-10">
+            Your clinical summary, including vitals and prescriptions, is being finalized and will appear here shortly after the doctor signs off.
+          </p>
+          {opd.Status === "REGISTERED" && (
+            <Link
+              href="/patient/appointments"
+              className="inline-flex items-center gap-3 px-10 py-4 bg-blue-600 text-white font-black rounded-[1.5rem] hover:bg-blue-700 transition-all shadow-xl shadow-blue-100 active:scale-95"
+            >
+              <Calendar className="w-5 h-5" />
+              Manage Appointments
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -5,6 +5,11 @@ import { redirect } from "next/navigation";
 import { finishConsultation } from "@/app/actions/opd";
 import PrescriptionForm from "./PrescriptionForm";
 import PrintPrescriptionButton from "./PrintPrescriptionButton";
+import MedicalHistoryDrawer from "./MedicalHistoryDrawer";
+import OrderLabTestForm from "./OrderLabTestForm";
+import PrintDraftButton from "./PrintDraftButton";
+import ConsultationFooter from "./ConsultationFooter";
+import { getLabTestCatalog } from "@/app/actions/lab";
 
 export const runtime = "nodejs";
 
@@ -46,6 +51,42 @@ export default async function ConsultationPage({
         return <div className="p-4 bg-red-50 text-red-600 rounded">OPD not found</div>;
     }
 
+    // Fetch lab catalog
+    const labCategories = await getLabTestCatalog();
+
+    // Fetch current lab orders for this OPD
+    const labOrders = await prisma.labOrder.findMany({
+        where: { OPDID: opdId },
+        include: {
+            Items: {
+                include: { Test: true }
+            }
+        },
+        orderBy: { OrderDate: 'desc' }
+    });
+
+    // Fetch past completed OPDs for this patient
+    const pastOpds = await prisma.oPD.findMany({
+        where: {
+            PatientID: opd.PatientID,
+            OPDID: { not: opdId }, // Exclude current OPD
+            Status: { in: ["COMPLETED", "BILLED", "CLOSED"] }
+        },
+        orderBy: { OPDDateTime: "desc" },
+        include: {
+            Diagnoses: {
+                include: { DiagnosisType: true }
+            },
+            prescription: {
+                include: {
+                    Medicines: {
+                        include: { Medicine: true }
+                    }
+                }
+            }
+        }
+    });
+
     // Authorize doctor
     if (opd.Doctor.Email !== user.Email) {
         return <div className="p-4 bg-red-50 text-red-600 rounded">Not authorized to view this patient</div>;
@@ -61,14 +102,18 @@ export default async function ConsultationPage({
         });
     }
 
-    const allDiagnoses = await prisma.diagnosisType.findMany({
-        where: { IsActive: true },
-        orderBy: { DiagnosisTypeName: "asc" },
-    });
-
     const medicines = await prisma.medicine.findMany({
         orderBy: { Name: "asc" },
     });
+
+    // Serialize pastOpds to handle Prisma Decimal types
+    const serializedPastOpds = pastOpds.map(p => ({
+        ...p,
+        Weight: p.Weight ? Number(p.Weight) : null,
+        Temperature: p.Temperature ? Number(p.Temperature) : null,
+        Height: p.Height ? Number(p.Height) : null,
+        RegistrationFee: Number(p.RegistrationFee),
+    }));
 
     // If completed, show summary and print button
     if (opd.Status === "COMPLETED" || opd.Status === "BILLED" || opd.Status === "CLOSED") {
@@ -92,17 +137,8 @@ export default async function ConsultationPage({
                 Specialization: opd.Doctor.Specialization,
                 RegistrationNo: opd.Doctor.RegistrationNo,
             },
-            vitals: {
-                Weight: opd.Weight ? Number(opd.Weight.toString()) : null,
-                Height: opd.Height ? Number(opd.Height.toString()) : null,
-                BP: opd.BP_Systolic ? `${opd.BP_Systolic}/${opd.BP_Diastolic}` : null,
-                Temp: opd.Temperature ? Number(opd.Temperature.toString()) : null,
-                Pulse: opd.Pulse,
-                RespRate: opd.RespRate,
-                SpO2: opd.SpO2,
-            },
             medicines: prescription?.Medicines.map(m => ({
-                name: m.Medicine.Name,
+                name: m.Medicine?.Name || m.MedicineName || "Unknown",
                 dosage: m.Dosage,
                 frequency: m.Frequency,
                 duration: m.Duration,
@@ -113,203 +149,214 @@ export default async function ConsultationPage({
         };
 
         return (
-            <div className="max-w-4xl mx-auto p-4 flex flex-col gap-8">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/doctor/dashboard" className="text-gray-500 hover:text-gray-900">
-                            ← Back to Dashboard
-                        </Link>
-                        <h1 className="text-2xl font-bold text-gray-900">Consultation Summary</h1>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="bg-green-600 p-8 text-center text-white">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-3xl">✓</span>
-                        </div>
-                        <h2 className="text-2xl font-bold mb-2">Consultation Finished</h2>
-                        <p className="opacity-90">Medical record has been saved. Please provide the prescription to the patient.</p>
-                    </div>
-
-                    <div className="p-8 space-y-8">
-                        <div className="grid grid-cols-2 gap-8 border-b pb-8">
-                            <div>
-                                <h3 className="text-sm font-bold text-gray-400 uppercase mb-2">Patient</h3>
-                                <p className="text-lg font-bold text-gray-900">{opd.Patient.PatientName}</p>
-                                <p className="text-gray-500">{opd.Patient.Age}Y / {opd.Patient.Gender}</p>
-                            </div>
-                            <div className="text-right">
-                                <h3 className="text-sm font-bold text-gray-400 uppercase mb-2">Visit Date</h3>
-                                <p className="text-lg font-bold text-gray-900">{opd.OPDDateTime.toLocaleDateString()}</p>
-                                <p className="text-gray-500">Token: {opd.TokenNo}</p>
-                            </div>
-                        </div>
-
-                        <div className="flex justify-center gap-4 py-4">
-                            <PrintPrescriptionButton data={printData} />
-                            <Link
-                                href="/doctor/dashboard"
-                                className="bg-gray-100 text-gray-700 px-6 py-2.5 rounded-lg hover:bg-gray-200 transition font-semibold active:scale-95"
-                            >
-                                Done
+            <div className="min-h-full bg-slate-50 relative pb-32">
+                <div className="max-w-4xl mx-auto p-4 pt-12 flex flex-col gap-8">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Link href="/doctor/dashboard" className="text-slate-500 hover:text-slate-900 transition-colors font-medium flex items-center gap-2">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"></path></svg>
+                                Back to Dashboard
                             </Link>
+                            <h1 className="text-2xl font-bold text-slate-900 border-l-2 border-slate-300 pl-4">Consultation Summary</h1>
+                        </div>
+                    </div>
+
+                    <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div className="bg-emerald-600 p-10 text-center text-white relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                            <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
+                            
+                            <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
+                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path></svg>
+                            </div>
+                            <h2 className="text-3xl font-extrabold mb-3">Consultation Completed</h2>
+                            <p className="text-emerald-50 text-lg max-w-md mx-auto">The medical record has been securely saved. You can now print the prescription for the patient.</p>
+                        </div>
+
+                        <div className="p-10 space-y-10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 border-b border-slate-100 pb-10">
+                                <div className="space-y-1">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Patient Information</h3>
+                                    <p className="text-2xl font-bold text-slate-900">{opd.Patient.PatientName}</p>
+                                    <p className="text-slate-500 font-medium text-lg">{opd.Patient.Age} Years • {opd.Patient.Gender}</p>
+                                    <p className="text-slate-400 font-medium">ID: {opd.Patient.PatientNo}</p>
+                                </div>
+                                <div className="md:text-right space-y-1">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Visit Details</h3>
+                                    <p className="text-2xl font-bold text-slate-900">{opd.OPDDateTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                    <p className="text-slate-500 font-medium text-lg">Token No: {opd.TokenNo}</p>
+                                    <p className="text-slate-400 font-medium">OPD ID: #{opd.OPDID}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap justify-center gap-6 py-4">
+                                <PrintPrescriptionButton data={printData} />
+                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* Footer for Summary Page - FULL WIDTH */}
+                <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 py-5 px-8 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between">
+                        <Link href="/doctor/dashboard" className="px-8 py-3 border border-slate-200 rounded-2xl text-base font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-3 shadow-sm active:scale-95">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 19l-7-7m0 0l7-7m-7 7h18" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5"></path></svg>
+                            Back to Dashboard
+                        </Link>
+                        <div className="hidden sm:block text-slate-400 font-medium text-sm">
+                            Session ID: {opd.OPDID}
+                        </div>
+                    </div>
+                </footer>
             </div>
         );
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 flex flex-col gap-6">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/doctor/dashboard" className="text-gray-500 hover:text-gray-900">
-                        ← Dashboard
-                    </Link>
-                    <h1 className="text-2xl font-bold text-gray-900">Consultation Room</h1>
-                </div>
-                <div className="text-sm px-3 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
-                    Status: {opd.Status}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column: Patient Profile */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-fit">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Patient Details</h2>
-                    <div className="space-y-4">
-                        <div>
-                            <p className="text-sm text-gray-500">Name</p>
-                            <p className="font-medium text-gray-900">{opd.Patient.PatientName}</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+        <form action={finishConsultation} className="min-h-full pb-32 bg-slate-50 font-inter relative">
+            <input type="hidden" name="OPDID" value={opd.OPDID} />
+            
+            {/* BEGIN: MainHeader */}
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        {/* Doctor Info */}
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xl uppercase">
+                                {opd.Doctor.FirstName[0]}{opd.Doctor.LastName[0]}
+                            </div>
                             <div>
-                                <p className="text-sm text-gray-500">Age / Sex</p>
-                                <p className="font-medium text-gray-900">
-                                    {opd.Patient.Age} / {opd.Patient.Gender}
+                                <h1 className="text-xl font-bold text-slate-900 leading-tight">
+                                    Dr. {opd.Doctor.FirstName} {opd.Doctor.LastName}
+                                </h1>
+                                <div className="flex items-center gap-2 text-sm text-slate-500">
+                                    <span>{opd.Doctor.Specialization}</span>
+                                    <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                    <span>{opd.Doctor.Department}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Status and Timing */}
+                        <div className="flex items-center gap-6">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-xs font-medium text-slate-400 uppercase tracking-wider">Appointment</p>
+                                <p className="text-sm font-semibold text-slate-700">
+                                    {opd.OPDDateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {opd.OPDDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             </div>
-                            <div>
-                                <p className="text-sm text-gray-500">Blood Group</p>
-                                <p className="font-medium text-gray-900">{opd.Patient.BloodGroup || "N/A"}</p>
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Patient ID</p>
-                            <p className="font-medium text-gray-900">{opd.Patient.PatientNo}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Token</p>
-                            <p className="font-medium text-gray-900">{opd.TokenNo ?? "-"}</p>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                <span className="w-2 h-2 mr-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                In Progress
+                            </span>
                         </div>
                     </div>
                 </div>
+            </header>
+            {/* END: MainHeader */}
 
-                {/* Right Column: Consultation Form */}
-                <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <form action={finishConsultation} className="p-6 space-y-8">
-                        <input type="hidden" name="OPDID" value={opd.OPDID} />
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* BEGIN: LeftColumn - Patient Profile */}
+                    <aside className="lg:col-span-3 space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+                            <div className="flex flex-col items-center text-center">
+                                <div className="w-24 h-24 rounded-full border-4 border-blue-50 mb-4 bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold uppercase">
+                                    {opd.Patient.PatientName[0]}
+                                </div>
+                                <h2 className="text-lg font-bold text-slate-900">{opd.Patient.PatientName}</h2>
+                                <p className="text-sm text-slate-500 font-medium">ID: {opd.Patient.PatientNo}</p>
+                                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                                    <span className="px-2 py-1 bg-slate-100 text-slate-700 text-xs rounded-md">{opd.Patient.Age} / {opd.Patient.Gender}</span>
+                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">Token: {opd.TokenNo}</span>
+                                </div>
+                                <div className="mt-4 w-full pt-4 border-t border-slate-50 text-left">
+                                    <p className="text-xs text-slate-400 uppercase font-bold mb-2">Chief Complaint</p>
+                                    <span className="inline-block w-full px-3 py-2 bg-red-50 text-red-700 text-sm font-semibold rounded-lg border border-red-100">
+                                        {opd.Description || "No complaint recorded"}
+                                    </span>
+                                </div>
+                                <div className="mt-6 w-full space-y-3 text-left">
+                                    <div>
+                                        <p className="text-xs text-slate-400 uppercase font-bold">Contact</p>
+                                        <p className="text-sm text-slate-700">{opd.Patient.MobileNo}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-400 uppercase font-bold">Blood Group</p>
+                                        <p className="text-sm text-slate-700">{opd.Patient.BloodGroup || "N/A"}</p>
+                                    </div>
+                                </div>
 
-                        {/* Vitals Section */}
-                        <div className="bg-blue-50/50 p-6 rounded-xl border border-blue-100">
-                            <h2 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
-                                <span className="p-1.5 bg-blue-100 rounded-lg">💓</span>
-                                Patient Vitals
-                            </h2>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">Weight (kg)</label>
-                                    <input name="Weight" type="number" step="0.01" defaultValue={opd.Weight?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">Height (cm)</label>
-                                    <input name="Height" type="number" step="0.01" defaultValue={opd.Height?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">Temp (°F)</label>
-                                    <input name="Temperature" type="number" step="0.1" defaultValue={opd.Temperature?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">Pulse (bpm)</label>
-                                    <input name="Pulse" type="number" defaultValue={opd.Pulse?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">BP (Systolic)</label>
-                                    <input name="BP_Systolic" type="number" defaultValue={opd.BP_Systolic?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">BP (Diastolic)</label>
-                                    <input name="BP_Diastolic" type="number" defaultValue={opd.BP_Diastolic?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">Resp Rate</label>
-                                    <input name="RespRate" type="number" defaultValue={opd.RespRate?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-semibold text-blue-700 uppercase mb-1">SpO2 (%)</label>
-                                    <input name="SpO2" type="number" defaultValue={opd.SpO2?.toString()} className="w-full rounded-lg border-blue-200 focus:ring-blue-500 focus:border-blue-500" />
+                                <div className="mt-6 w-full pt-6 border-t border-slate-100 space-y-3">
+                                    <MedicalHistoryDrawer patientName={opd.Patient.PatientName} pastOpds={serializedPastOpds as any} />
+                                    <OrderLabTestForm opdId={opd.OPDID} categories={labCategories as any} />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Diagnoses Section */}
-                        <div>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Diagnosis</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {allDiagnoses.map((diag) => (
-                                    <label key={diag.DiagnosisTypeID} className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            name="diagnoses"
-                                            value={diag.DiagnosisTypeID}
-                                            defaultChecked={opd.Diagnoses.some(d => d.DiagnosisTypeID === diag.DiagnosisTypeID)}
-                                            className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                        />
-                                        <div>
-                                            <p className="font-medium text-gray-900">{diag.DiagnosisTypeName}</p>
-                                            {diag.DiagnosisTypeShortName && (
-                                                <p className="text-sm text-gray-500">{diag.DiagnosisTypeShortName}</p>
-                                            )}
+                        {/* Lab Orders Section */}
+                        {labOrders.length > 0 && (
+                            <div className="bg-white rounded-xl shadow-sm p-6 border border-slate-100">
+                                <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                    <span className="p-1 bg-teal-100 rounded text-teal-600">🧪</span>
+                                    Recent Lab Orders
+                                </h3>
+                                <div className="space-y-4">
+                                    {labOrders.map(order => (
+                                        <div key={order.OrderID} className="text-sm border-l-2 border-teal-500 pl-3 py-1">
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="font-semibold text-slate-800">Order #{order.OrderID}</span>
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-50 text-teal-700 font-bold uppercase">
+                                                    {order.Status.replace('_', ' ')}
+                                                </span>
+                                            </div>
+                                            <ul className="text-xs text-slate-500 list-disc list-inside">
+                                                {order.Items.slice(0, 2).map(item => (
+                                                    <li key={item.OrderItemID} className="truncate">{item.Test.TestName}</li>
+                                                ))}
+                                                {order.Items.length > 2 && <li>+ {order.Items.length - 2} more</li>}
+                                            </ul>
                                         </div>
-                                    </label>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
+                    </aside>
+                    {/* END: LeftColumn */}
 
-
+                    {/* BEGIN: RightColumn - Main Content */}
+                    <div className="lg:col-span-9 space-y-6">
+                        
                         {/* Prescription Section */}
-                        <div className="pt-8 border-t border-gray-100">
-                            <PrescriptionForm medicines={medicines} />
-                        </div>
-
-
-
-                        {/* Clinical Notes */}
-                        <div>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Clinical Notes & Follow-up</h2>
-                            <textarea
-                                name="Description"
-                                rows={4}
-                                defaultValue={opd.Description || ""}
-                                placeholder="Enter instructions, prescriptions, or summary..."
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        <section className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                            <PrescriptionForm 
+                                medicines={medicines} 
+                                defaultFollowUpDate={opd.FollowUpDate ? opd.FollowUpDate.toISOString().split("T")[0] : ""}
+                                defaultVitals={{
+                                   BP_Systolic: opd.BP_Systolic,
+                                   BP_Diastolic: opd.BP_Diastolic,
+                                   Temperature: opd.Temperature ? Number(opd.Temperature) : null,
+                                   Pulse: opd.Pulse,
+                                   Weight: opd.Weight ? Number(opd.Weight) : null,
+                                   SpO2: opd.SpO2,
+                                   Height: (opd.Height ? Number(opd.Height) : null) || (opd.Patient.Height ? Number(opd.Patient.Height) : null)
+                                }}                                initialMedicines={opd.prescription?.Medicines.map(m => ({
+                                    MedicineName: m.Medicine?.Name || m.MedicineName || "",
+                                    Dosage: m.Dosage,
+                                    Frequency: m.Frequency,
+                                    Duration: m.Duration,
+                                    Instructions: m.Instructions || "After Food"
+                                }))}
+                                initialNotes={opd.prescription?.Notes || ""}
                             />
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="pt-6 border-t flex gap-4 justify-end">
-                            <button
-                                type="submit"
-                                className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-medium tracking-wide transition shadow-sm"
-                            >
-                                Finish Consultation
-                            </button>
-                        </div>
-                    </form>
+                        </section>
+                    </div>
+                    {/* END: RightColumn */}
                 </div>
-            </div>
-        </div>
+            </main>
+
+            {/* BEGIN: Sticky Action Bar - FULL WIDTH */}
+            <ConsultationFooter />
+            {/* END: Sticky Action Bar */}
+        </form>
     );
 }

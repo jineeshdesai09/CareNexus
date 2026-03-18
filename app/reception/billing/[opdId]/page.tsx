@@ -73,6 +73,9 @@ export default async function BillingPage({
         }))
     }));
 
+    const hospital = await prisma.hospital.findFirst();
+    const isRateEnabled = hospital?.IsRateEnableInReceipt ?? true;
+
     // Calculate base total (Registration fee)
     const baseTotal = opd.RegistrationFee.toNumber();
 
@@ -118,6 +121,7 @@ export default async function BillingPage({
                         opdId={opd.OPDID}
                         baseTotal={baseTotal}
                         treatments={treatments}
+                        isRateEnabled={isRateEnabled}
                     />
                 </div>
             </div>

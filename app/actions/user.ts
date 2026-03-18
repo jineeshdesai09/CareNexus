@@ -2,9 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
 import { getCurrentUser } from "../lib/auth";
-import { Role } from "../generated/prisma/enums";
+import { Role } from "@prisma/client";
 
 export async function updateUserStatus(userId: number, status: "APPROVED" | "REJECTED") {
   try {
@@ -67,4 +68,43 @@ export async function deleteUser(userId: number) {
     console.error("Failed to delete user:", error);
     return { success: false, error: "Failed to delete user" };
   }
+}
+
+export async function updateUser(userId: number, formData: FormData) {
+  try {
+    const name = String(formData.get("name"));
+    const email = String(formData.get("email"));
+    const role = String(formData.get("role")) as Role;
+    const status = String(formData.get("status"));
+
+    await prisma.user.update({
+      where: { UserID: userId },
+      data: {
+        Name: name,
+        Email: email,
+        Role: role,
+        Status: status,
+      },
+    });
+
+    revalidatePath("/admin/users");
+  } catch (error: any) {
+    redirect(`/admin/users/${userId}/edit?error=profile`);
+  }
+  redirect(`/admin/users/${userId}/edit?success=profile`);
+}
+
+export async function resetPassword(userId: number, formData: FormData) {
+  try {
+    const password = String(formData.get("password"));
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: { UserID: userId },
+      data: { Password: hashedPassword },
+    });
+  } catch (error: any) {
+    redirect(`/admin/users/${userId}/edit?error=password`);
+  }
+  redirect(`/admin/users/${userId}/edit?success=password`);
 }

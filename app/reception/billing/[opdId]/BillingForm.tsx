@@ -19,9 +19,10 @@ interface BillingFormProps {
     opdId: number;
     baseTotal: number;
     treatments: Treatment[];
+    isRateEnabled?: boolean;
 }
 
-export default function BillingForm({ opdId, baseTotal, treatments }: BillingFormProps) {
+export default function BillingForm({ opdId, baseTotal, treatments, isRateEnabled = true }: BillingFormProps) {
     const [selectedServices, setSelectedServices] = useState<Record<number, { checked: boolean, quantity: number, rate: number }>>({});
 
     const handleServiceToggle = (id: number, rate: number, checked: boolean) => {
@@ -86,20 +87,22 @@ export default function BillingForm({ opdId, baseTotal, treatments }: BillingFor
                                             />
                                             <div>
                                                 <span className="text-gray-900 block font-medium">{sub.SubTreatmentTypeName}</span>
-                                                <span className="text-gray-500 text-sm">₹ {sub.Rate.toString()}</span>
+                                                {isRateEnabled && <span className="text-gray-500 text-sm">₹ {sub.Rate.toString()}</span>}
                                             </div>
                                         </label>
-                                        <div className="flex gap-2 items-center">
-                                            <label className="text-xs text-gray-500">Qty:</label>
-                                            <input
-                                                type="number"
-                                                name={`quantity_${sub.SubTreatmentTypeID}`}
-                                                value={selectedServices[sub.SubTreatmentTypeID]?.quantity || 1}
-                                                onChange={(e) => handleQuantityChange(sub.SubTreatmentTypeID, parseInt(e.target.value))}
-                                                min={1}
-                                                className="w-16 p-1 border rounded text-right text-sm"
-                                            />
-                                        </div>
+                                        {isRateEnabled && (
+                                            <div className="flex gap-2 items-center">
+                                                <label className="text-xs text-gray-500">Qty:</label>
+                                                <input
+                                                    type="number"
+                                                    name={`quantity_${sub.SubTreatmentTypeID}`}
+                                                    value={selectedServices[sub.SubTreatmentTypeID]?.quantity || 1}
+                                                    onChange={(e) => handleQuantityChange(sub.SubTreatmentTypeID, parseInt(e.target.value))}
+                                                    min={1}
+                                                    className="w-16 p-1 border rounded text-right text-sm"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>

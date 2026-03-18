@@ -70,6 +70,21 @@ export async function getCurrentUser() {
       Name: true,
       Email: true,
       Role: true,
+      Status: true, // Needed to block PENDING users at page level
     },
   });
+}
+
+export async function requirePatient() {
+  const userId = await requireAuth();
+
+  const user = await prisma.user.findUnique({
+    where: { UserID: userId },
+  });
+
+  if (!user || user.Role !== "PATIENT") {
+    redirect("/login");
+  }
+
+  return user;
 }

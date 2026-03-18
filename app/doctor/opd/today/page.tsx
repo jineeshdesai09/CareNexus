@@ -15,9 +15,17 @@ export default async function DoctorTodayOPDPage() {
   const endOfDay = new Date();
   endOfDay.setHours(23, 59, 59, 999);
 
+  const doctor = await prisma.doctor.findFirst({
+    where: { Email: user.Email }
+  });
+
+  if (!doctor) {
+    return <div>Doctor profile not found</div>;
+  }
+
   const opds = await prisma.oPD.findMany({
     where: {
-      TreatedByDoctorID: user.UserID,
+      TreatedByDoctorID: doctor.DoctorID,
       OPDDateTime: { gte: startOfDay, lte: endOfDay },
     },
     orderBy: [{ IsEmergency: "desc" }, { TokenNo: "asc" }],

@@ -1,7 +1,7 @@
 "use client";
 
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 import { Printer } from "lucide-react";
 
 interface PrintReceiptButtonProps {
@@ -84,7 +84,7 @@ export default function PrintReceiptButton({ data }: PrintReceiptButtonProps) {
             ]);
         });
 
-        (doc as any).autoTable({
+        const result = autoTable(doc, {
             startY: 75,
             head: [['Service Description', 'Rate', 'Qty', 'Amount']],
             body: tableBody,
@@ -96,7 +96,7 @@ export default function PrintReceiptButton({ data }: PrintReceiptButtonProps) {
             margin: { left: 15, right: 15 }
         });
 
-        let finalY = (doc as any).lastAutoTable.finalY + 10;
+        let finalY = (result as any).lastAutoTable.finalY + 10;
 
         // 4. Totals
         doc.setFont("helvetica", "bold");

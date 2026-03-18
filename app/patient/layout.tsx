@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getCurrentUser } from "../lib/auth";
 import { redirect } from "next/navigation";
 import { logout } from "@/app/actions/logout";
-import { Heart, Home, History, User, LogOut, FileText } from "lucide-react";
+import { Heart, Home, History, User, LogOut, FileText, Calendar } from "lucide-react";
 
 export const runtime = "nodejs";
 
@@ -19,6 +19,7 @@ export default async function PatientLayout({
 
   const menuItems = [
     { label: "Dashboard", href: "/patient/dashboard", icon: Home },
+    { label: "My Appointments", href: "/patient/appointments", icon: Calendar },
     { label: "Medical History", href: "/patient/history", icon: History },
   ];
 
