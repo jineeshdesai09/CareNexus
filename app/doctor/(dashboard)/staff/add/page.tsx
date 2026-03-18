@@ -12,7 +12,7 @@ export default function DoctorAddStaffPage() {
         </div>
         <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Add Staff Member</h1>
         <p className="text-slate-500 text-lg">
-          Register pharmacists and lab technicians to support your OPD workflow.
+          Register receptionists to support your OPD workflow.
         </p>
       </div>
 

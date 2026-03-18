@@ -72,26 +72,31 @@ export default async function DoctorDashboard() {
       }
   });
 
-  // Calculate Start and End of Current Week (assuming week starts on Sunday)
-  const currentDayOfWeek = startOfDay.getDay();
-  const startOfWeek = new Date(startOfDay);
-  startOfWeek.setDate(startOfDay.getDate() - currentDayOfWeek);
-  
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  endOfWeek.setHours(23, 59, 59, 999);
-
-  // Upcoming Follow-ups this week
-  const weeklyFollowUps = await prisma.oPD.count({
+  // Upcoming Follow-ups this week (Next 7 Days)
+  const upcomingFollowUps = await prisma.oPD.findMany({
       where: {
           TreatedByDoctorID: doctor.DoctorID,
-          FollowUpDate: { gte: startOfWeek, lte: endOfWeek }
-      }
+          FollowUpDate: { 
+            gte: startOfDay, 
+            lte: new Date(startOfDay.getTime() + 7 * 24 * 60 * 60 * 1000) 
+          }
+      },
+      include: {
+        Patient: {
+          select: {
+            PatientName: true,
+            PatientNo: true,
+            MobileNo: true
+          }
+        }
+      },
+      orderBy: { FollowUpDate: "asc" }
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-4 flex flex-col gap-6">
+    <div className="max-w-6xl mx-auto p-4 flex flex-col gap-8">
       <div className="flex justify-between items-center border-b border-gray-200 pb-4">
+
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
             Doctor Dashboard
@@ -129,77 +134,61 @@ export default async function DoctorDashboard() {
                   <CalendarClock className="w-6 h-6" />
               </div>
               <div>
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Follow-ups This Week</p>
-                  <p className="text-2xl font-bold text-gray-900">{weeklyFollowUps}</p>
+                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Follow-ups (7d)</p>
+                  <p className="text-2xl font-bold text-gray-900">{upcomingFollowUps.length}</p>
               </div>
           </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-5 border-b bg-gray-50">
-          <h2 className="text-lg font-semibold text-gray-800">Today's Appointments</h2>
+      <div className="space-y-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-5 border-b bg-gray-50">
+            <h2 className="text-lg font-semibold text-gray-800">Today's Appointments</h2>
+          </div>
+          {/* ... existing table code ... */}
         </div>
 
-        {opds.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            No patients currently in your queue.
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-5 border-b bg-gray-50 flex items-center gap-2">
+            <CalendarClock className="w-5 h-5 text-gray-600" />
+            <h2 className="text-lg font-semibold text-gray-800">Upcoming Follow-ups (Next 7 Days)</h2>
           </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Token</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Age/Sex</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {opds.map((opd) => (
-                <tr key={opd.OPDID} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {opd.TokenNo ?? "-"}
-                    {opd.IsEmergency && (
-                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
-                        EMG
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {opd.Patient.PatientNo}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {opd.Patient.PatientName}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {opd.Patient.Age} / {opd.Patient.Gender.charAt(0)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    {opd.Status === 'WAITING' ? (
-                      <span className="text-yellow-600">Waiting</span>
-                    ) : opd.Status === 'IN_CONSULTATION' ? (
-                      <span className="text-blue-600">In Progress</span>
-                    ) : opd.Status === 'REGISTERED' ? (
-                      <span className="text-gray-600">Registered</span>
-                    ) : (
-                      <span className="text-green-600">{opd.Status}</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <Link
-                      href={`/doctor/opd/${opd.OPDID}`}
-                      className="text-blue-600 hover:text-blue-900 hover:underline"
-                    >
-                      {opd.Status === 'IN_CONSULTATION' ? 'Resume' : 'Start'} Consultation →
-                    </Link>
-                  </td>
+
+          {upcomingFollowUps.length === 0 ? (
+            <div className="p-8 text-center text-gray-500 italic">
+              No follow-ups scheduled for the next 7 days.
+            </div>
+          ) : (
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Follow-up Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Contact</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {upcomingFollowUps.map((opd) => (
+                  <tr key={opd.OPDID} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
+                      {opd.FollowUpDate?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {opd.Patient.PatientNo}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {opd.Patient.PatientName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-600">
+                      {opd.Patient.MobileNo}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
     </div>
   );

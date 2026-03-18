@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   Users,
   Bed,
@@ -11,6 +11,10 @@ import {
   ShieldCheck,
   UserCheck,
   UserX,
+  Database,
+  Download,
+  Upload,
+  Loader2
 } from "lucide-react";
 import { updateUserStatus } from "@/app/actions/user";
 
@@ -43,6 +47,47 @@ export default function DashboardClient({
   pendingUsers,
   recentActivities,
 }: DashboardClientProps) {
+  const [isRestoring, setIsRestoring] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    window.location.href = "/api/backup/export";
+  };
+
+  const handleRestore = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!confirm(`Are you sure you want to restore the database from ${file.name}? This will overwrite existing data.`)) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setIsRestoring(true);
+    const formData = new FormData();
+    formData.append("backup", file);
+
+    try {
+      const response = await fetch("/api/backup/restore", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        alert("Database restored successfully!");
+        window.location.reload();
+      } else {
+        const error = await response.text();
+        alert(`Restore failed: ${error}`);
+      }
+    } catch (error) {
+      alert(`Restore failed: ${error}`);
+    } finally {
+      setIsRestoring(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   const statCards = [
     {
       label: "Total Patients",
@@ -121,8 +166,8 @@ export default function DashboardClient({
                     <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
                       {pendingUsers.length} Action Required
                     </span>
-                    <a 
-                      href="/admin/users" 
+                    <a
+                      href="/admin/users"
                       className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
                     >
                       View All Users →
@@ -140,25 +185,21 @@ export default function DashboardClient({
                     {pendingUsers.map((user) => (
                       <div key={user.UserID} className="group bg-gray-50 hover:bg-white border border-transparent hover:border-blue-100 p-5 rounded-xl transition-all flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                              user.Role === 'DOCTOR' ? 'bg-blue-100 text-blue-700' : 
-                              user.Role === 'PATIENT' ? 'bg-green-100 text-green-700' :
+                          <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${user.Role === 'DOCTOR' ? 'bg-blue-100 text-blue-700' :
+                            user.Role === 'PATIENT' ? 'bg-green-100 text-green-700' :
                               user.Role === 'RECEPTIONIST' ? 'bg-purple-100 text-purple-700' :
-                              user.Role === 'PHARMACIST' ? 'bg-orange-100 text-orange-700' :
-                              'bg-amber-100 text-amber-700'
+                                'bg-amber-100 text-amber-700'
                             }`}>
                             {user.Name.charAt(0)}
                           </div>
                           <div>
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-bold text-gray-900">{user.Name}</p>
-                              <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${
-                                user.Role === "DOCTOR" ? "bg-blue-100 text-blue-700" : 
+                              <span className={`text-[10px] px-2 py-0.5 rounded font-black uppercase ${user.Role === "DOCTOR" ? "bg-blue-100 text-blue-700" :
                                 user.Role === "PATIENT" ? "bg-green-100 text-green-700" :
-                                user.Role === "RECEPTIONIST" ? "bg-purple-100 text-purple-700" :
-                                user.Role === "PHARMACIST" ? "bg-orange-100 text-orange-700" :
-                                "bg-amber-100 text-amber-700"
-                              }`}>
+                                  user.Role === "RECEPTIONIST" ? "bg-purple-100 text-purple-700" :
+                                    "bg-amber-100 text-amber-700"
+                                }`}>
                                 {user.Role}
                               </span>
                             </div>
@@ -209,6 +250,56 @@ export default function DashboardClient({
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* System Maintenance Section */}
+          <div className="mt-12 bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl shadow-blue-900/20 border border-white/5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full -mr-32 -mt-32" />
+
+            <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-10">
+              <div className="flex items-center gap-6">
+                <div className="p-5 bg-white/5 border border-white/10 rounded-3xl backdrop-blur-xl">
+                  <Database className="w-10 h-10 text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-2xl font-black tracking-tight mb-1">System Maintenance</p>
+                  <p className="text-sm text-slate-400 font-medium max-w-sm">
+                    Perform database snapshots or restore your system from a previous backup point.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-4 w-full md:w-auto">
+                <button
+                  onClick={handleExport}
+                  className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-black text-sm transition-all flex items-center gap-3 backdrop-blur-md group active:scale-95"
+                >
+                  <Download className="w-5 h-5 text-blue-400 group-hover:translate-y-0.5 transition-transform" />
+                  Export Backup
+                </button>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".sql"
+                    onChange={handleRestore}
+                    className="hidden"
+                    ref={fileInputRef}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isRestoring}
+                    className="px-8 py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800/50 rounded-2xl font-black text-sm transition-all flex items-center gap-3 shadow-lg shadow-blue-600/20 active:scale-95"
+                  >
+                    {isRestoring ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5 transition-transform" />
+                    )}
+                    {isRestoring ? "Restoring..." : "Import Restore"}
+                  </button>
                 </div>
               </div>
             </div>

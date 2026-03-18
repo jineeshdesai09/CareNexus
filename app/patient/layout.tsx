@@ -21,6 +21,7 @@ export default async function PatientLayout({
     { label: "Dashboard", href: "/patient/dashboard", icon: Home },
     { label: "My Appointments", href: "/patient/appointments", icon: Calendar },
     { label: "Medical History", href: "/patient/history", icon: History },
+    { label: "My Profile", href: "/patient/profile", icon: User },
   ];
 
   return (

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/app/lib/auth";
+import { recordAuditLog } from "@/app/lib/audit";
 
 export async function createTreatment(formData: FormData) {
     const user = await getCurrentUser();
@@ -15,14 +16,23 @@ export async function createTreatment(formData: FormData) {
         throw new Error("No hospital found");
     }
 
+    const name = String(formData.get("TreatmentTypeName"));
+
     await prisma.treatmentType.create({
         data: {
-            TreatmentTypeName: String(formData.get("TreatmentTypeName")),
+            TreatmentTypeName: name,
             TreatmentTypeShortName: formData.get("TreatmentTypeShortName") ? String(formData.get("TreatmentTypeShortName")) : null,
             Description: formData.get("Description") ? String(formData.get("Description")) : null,
             HospitalID: hospital.HospitalID,
             UserID: user.UserID,
         },
+    });
+
+    await recordAuditLog({
+        Action: "CREATE",
+        Module: "TREATMENT_MASTER",
+        UserID: user.UserID,
+        Details: `Created treatment type: ${name}`
     });
 
     redirect("/admin/treatments?success=1");

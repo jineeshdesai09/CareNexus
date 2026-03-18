@@ -6,13 +6,25 @@ import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
 import { getCurrentUser } from "../lib/auth";
 import { Role } from "@prisma/client";
+import { recordAuditLog } from "@/app/lib/audit";
 
 export async function updateUserStatus(userId: number, status: "APPROVED" | "REJECTED") {
   try {
-    await prisma.user.update({
+    const requester = await getCurrentUser();
+    const user = await prisma.user.update({
       where: { UserID: userId },
       data: { Status: status },
     });
+
+    if (requester) {
+      await recordAuditLog({
+        Action: status === "APPROVED" ? "UPDATE" : "DELETE",
+        Module: "USER_MANAGEMENT",
+        UserID: requester.UserID,
+        Details: `${status} user: ${user.Name} (${user.Email})`,
+      });
+    }
+
     revalidatePath("/admin/users");
     revalidatePath("/admin/dashboard");
     return { success: true };
@@ -38,7 +50,7 @@ export async function createStaff(formData: FormData) {
     if (existingUser) return { success: false, error: "Email already exists" };
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         Name: name,
         Email: email,
@@ -46,6 +58,13 @@ export async function createStaff(formData: FormData) {
         Role: role,
         Status: "APPROVED",
       },
+    });
+
+    await recordAuditLog({
+      Action: "CREATE",
+      Module: "USER_MANAGEMENT",
+      UserID: requester.UserID,
+      Details: `Created staff user: ${name} as ${role}`,
     });
 
     revalidatePath("/admin/users");
@@ -58,9 +77,20 @@ export async function createStaff(formData: FormData) {
 
 export async function deleteUser(userId: number) {
   try {
-    await prisma.user.delete({
+    const requester = await getCurrentUser();
+    const user = await prisma.user.delete({
       where: { UserID: userId },
     });
+
+    if (requester) {
+      await recordAuditLog({
+        Action: "DELETE",
+        Module: "USER_MANAGEMENT",
+        UserID: requester.UserID,
+        Details: `Deleted user: ${user.Name} (${user.Email})`,
+      });
+    }
+
     revalidatePath("/admin/users");
     revalidatePath("/admin/dashboard");
     return { success: true };
@@ -72,12 +102,13 @@ export async function deleteUser(userId: number) {
 
 export async function updateUser(userId: number, formData: FormData) {
   try {
+    const requester = await getCurrentUser();
     const name = String(formData.get("name"));
     const email = String(formData.get("email"));
     const role = String(formData.get("role")) as Role;
     const status = String(formData.get("status"));
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { UserID: userId },
       data: {
         Name: name,
@@ -86,6 +117,15 @@ export async function updateUser(userId: number, formData: FormData) {
         Status: status,
       },
     });
+
+    if (requester) {
+      await recordAuditLog({
+        Action: "UPDATE",
+        Module: "USER_MANAGEMENT",
+        UserID: requester.UserID,
+        Details: `Updated user details for: ${user.Name} (${user.Email})`,
+      });
+    }
 
     revalidatePath("/admin/users");
   } catch (error: any) {
@@ -96,13 +136,23 @@ export async function updateUser(userId: number, formData: FormData) {
 
 export async function resetPassword(userId: number, formData: FormData) {
   try {
+    const requester = await getCurrentUser();
     const password = String(formData.get("password"));
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { UserID: userId },
       data: { Password: hashedPassword },
     });
+
+    if (requester) {
+      await recordAuditLog({
+        Action: "UPDATE",
+        Module: "USER_MANAGEMENT",
+        UserID: requester.UserID,
+        Details: `Reset password for user: ${user.Name} (${user.Email})`,
+      });
+    }
   } catch (error: any) {
     redirect(`/admin/users/${userId}/edit?error=password`);
   }

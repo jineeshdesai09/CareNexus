@@ -1,0 +1,378 @@
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+COMMENT
+psql:db_backup/restore_neon_v2.sql:46: ERROR:  type "LabOrderStatus" already exists
+psql:db_backup/restore_neon_v2.sql:49: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TYPE public."LabOrderStatus" ;
+                                           ^
+psql:db_backup/restore_neon_v2.sql:63: ERROR:  type "OPDStatus" already exists
+psql:db_backup/restore_neon_v2.sql:66: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TYPE public."OPDStatus" ;
+                                      ^
+psql:db_backup/restore_neon_v2.sql:77: ERROR:  type "Role" already exists
+psql:db_backup/restore_neon_v2.sql:80: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TYPE public."Role" ;
+                                 ^
+SET
+SET
+psql:db_backup/restore_neon_v2.sql:100: ERROR:  relation "DiagnosisType" already exists
+psql:db_backup/restore_neon_v2.sql:103: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."DiagnosisType" ;
+                                           ^
+psql:db_backup/restore_neon_v2.sql:115: ERROR:  relation "DiagnosisType_DiagnosisTypeID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:118: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."DiagnosisType_DiagnosisTypeID_seq" ;
+                                                                  ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:153: ERROR:  relation "Doctor" already exists
+psql:db_backup/restore_neon_v2.sql:156: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Doctor" ;
+                                    ^
+psql:db_backup/restore_neon_v2.sql:173: ERROR:  relation "DoctorAvailability" already exists
+psql:db_backup/restore_neon_v2.sql:176: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."DoctorAvailability" ;
+                                                ^
+psql:db_backup/restore_neon_v2.sql:188: ERROR:  relation "DoctorAvailability_AvailabilityID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:191: ERROR:  syntax error at or near ";"
+LINE 1: ...ER SEQUENCE public."DoctorAvailability_AvailabilityID_seq" ;
+                                                                      ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:210: ERROR:  relation "Doctor_DoctorID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:213: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Doctor_DoctorID_seq" ;
+                                                    ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:243: ERROR:  relation "Hospital" already exists
+psql:db_backup/restore_neon_v2.sql:246: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Hospital" ;
+                                      ^
+psql:db_backup/restore_neon_v2.sql:258: ERROR:  relation "Hospital_HospitalID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:261: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Hospital_HospitalID_seq" ;
+                                                        ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:285: ERROR:  relation "LabOrder" already exists
+psql:db_backup/restore_neon_v2.sql:288: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."LabOrder" ;
+                                      ^
+psql:db_backup/restore_neon_v2.sql:304: ERROR:  relation "LabOrderItem" already exists
+psql:db_backup/restore_neon_v2.sql:307: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."LabOrderItem" ;
+                                          ^
+psql:db_backup/restore_neon_v2.sql:319: ERROR:  relation "LabOrderItem_OrderItemID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:322: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."LabOrderItem_OrderItemID_seq" ;
+                                                             ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:341: ERROR:  relation "LabOrder_OrderID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:344: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."LabOrder_OrderID_seq" ;
+                                                     ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:366: ERROR:  relation "LabTest" already exists
+psql:db_backup/restore_neon_v2.sql:369: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."LabTest" ;
+                                     ^
+psql:db_backup/restore_neon_v2.sql:381: ERROR:  relation "LabTestCategory" already exists
+psql:db_backup/restore_neon_v2.sql:384: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."LabTestCategory" ;
+                                             ^
+psql:db_backup/restore_neon_v2.sql:396: ERROR:  relation "LabTestCategory_CategoryID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:399: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."LabTestCategory_CategoryID_seq" ;
+                                                               ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:418: ERROR:  relation "LabTest_TestID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:421: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."LabTest_TestID_seq" ;
+                                                   ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:442: ERROR:  relation "Medicine" already exists
+psql:db_backup/restore_neon_v2.sql:445: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Medicine" ;
+                                      ^
+psql:db_backup/restore_neon_v2.sql:457: ERROR:  relation "Medicine_MedicineID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:460: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Medicine_MedicineID_seq" ;
+                                                        ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:499: ERROR:  relation "OPD" already exists
+psql:db_backup/restore_neon_v2.sql:502: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."OPD" ;
+                                 ^
+psql:db_backup/restore_neon_v2.sql:516: ERROR:  relation "OPDDiagnosisType" already exists
+psql:db_backup/restore_neon_v2.sql:519: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."OPDDiagnosisType" ;
+                                              ^
+psql:db_backup/restore_neon_v2.sql:531: ERROR:  relation "OPDDiagnosisType_OPDDiagnosisTypeID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:534: ERROR:  syntax error at or near ";"
+LINE 1: ... SEQUENCE public."OPDDiagnosisType_OPDDiagnosisTypeID_seq" ;
+                                                                      ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:553: ERROR:  relation "OPD_OPDID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:556: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."OPD_OPDID_seq" ;
+                                              ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:592: ERROR:  relation "Patient" already exists
+psql:db_backup/restore_neon_v2.sql:595: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Patient" ;
+                                     ^
+psql:db_backup/restore_neon_v2.sql:607: ERROR:  relation "Patient_PatientID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:610: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Patient_PatientID_seq" ;
+                                                      ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:629: ERROR:  relation "Prescription" already exists
+psql:db_backup/restore_neon_v2.sql:632: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Prescription" ;
+                                          ^
+psql:db_backup/restore_neon_v2.sql:649: ERROR:  relation "PrescriptionMedicine" already exists
+psql:db_backup/restore_neon_v2.sql:652: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."PrescriptionMedicine" ;
+                                                  ^
+psql:db_backup/restore_neon_v2.sql:664: ERROR:  relation "PrescriptionMedicine_ID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:667: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."PrescriptionMedicine_ID_seq" ;
+                                                            ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:686: ERROR:  relation "Prescription_PrescriptionID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:689: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Prescription_PrescriptionID_seq" ;
+                                                                ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:718: ERROR:  relation "Receipt" already exists
+psql:db_backup/restore_neon_v2.sql:721: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."Receipt" ;
+                                     ^
+psql:db_backup/restore_neon_v2.sql:738: ERROR:  relation "ReceiptTran" already exists
+psql:db_backup/restore_neon_v2.sql:741: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."ReceiptTran" ;
+                                         ^
+psql:db_backup/restore_neon_v2.sql:753: ERROR:  relation "ReceiptTran_ReceiptTranID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:756: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."ReceiptTran_ReceiptTranID_seq" ;
+                                                              ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:775: ERROR:  relation "Receipt_ReceiptID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:778: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."Receipt_ReceiptID_seq" ;
+                                                      ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:802: ERROR:  relation "SubTreatmentType" already exists
+psql:db_backup/restore_neon_v2.sql:805: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."SubTreatmentType" ;
+                                              ^
+psql:db_backup/restore_neon_v2.sql:817: ERROR:  relation "SubTreatmentType_SubTreatmentTypeID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:820: ERROR:  syntax error at or near ";"
+LINE 1: ... SEQUENCE public."SubTreatmentType_SubTreatmentTypeID_seq" ;
+                                                                      ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:842: ERROR:  relation "TreatmentType" already exists
+psql:db_backup/restore_neon_v2.sql:845: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."TreatmentType" ;
+                                           ^
+psql:db_backup/restore_neon_v2.sql:857: ERROR:  relation "TreatmentType_TreatmentTypeID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:860: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."TreatmentType_TreatmentTypeID_seq" ;
+                                                                  ^
+ALTER SEQUENCE
+psql:db_backup/restore_neon_v2.sql:882: ERROR:  relation "User" already exists
+psql:db_backup/restore_neon_v2.sql:885: ERROR:  syntax error at or near ";"
+LINE 1: ALTER TABLE public."User" ;
+                                  ^
+psql:db_backup/restore_neon_v2.sql:897: ERROR:  relation "User_UserID_seq" already exists
+psql:db_backup/restore_neon_v2.sql:900: ERROR:  syntax error at or near ";"
+LINE 1: ALTER SEQUENCE public."User_UserID_seq" ;
+                                                ^
+ALTER SEQUENCE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+COPY 0
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+psql:db_backup/restore_neon_v2.sql:1332: ERROR:  multiple primary keys for table "DiagnosisType" are not allowed
+psql:db_backup/restore_neon_v2.sql:1340: ERROR:  multiple primary keys for table "DoctorAvailability" are not allowed
+psql:db_backup/restore_neon_v2.sql:1348: ERROR:  multiple primary keys for table "Doctor" are not allowed
+psql:db_backup/restore_neon_v2.sql:1356: ERROR:  multiple primary keys for table "Hospital" are not allowed
+psql:db_backup/restore_neon_v2.sql:1364: ERROR:  multiple primary keys for table "LabOrderItem" are not allowed
+psql:db_backup/restore_neon_v2.sql:1372: ERROR:  multiple primary keys for table "LabOrder" are not allowed
+psql:db_backup/restore_neon_v2.sql:1380: ERROR:  multiple primary keys for table "LabTestCategory" are not allowed
+psql:db_backup/restore_neon_v2.sql:1388: ERROR:  multiple primary keys for table "LabTest" are not allowed
+psql:db_backup/restore_neon_v2.sql:1396: ERROR:  multiple primary keys for table "Medicine" are not allowed
+psql:db_backup/restore_neon_v2.sql:1404: ERROR:  multiple primary keys for table "OPDDiagnosisType" are not allowed
+psql:db_backup/restore_neon_v2.sql:1412: ERROR:  multiple primary keys for table "OPD" are not allowed
+psql:db_backup/restore_neon_v2.sql:1420: ERROR:  multiple primary keys for table "Patient" are not allowed
+psql:db_backup/restore_neon_v2.sql:1428: ERROR:  multiple primary keys for table "PrescriptionMedicine" are not allowed
+psql:db_backup/restore_neon_v2.sql:1436: ERROR:  multiple primary keys for table "Prescription" are not allowed
+psql:db_backup/restore_neon_v2.sql:1444: ERROR:  multiple primary keys for table "ReceiptTran" are not allowed
+psql:db_backup/restore_neon_v2.sql:1452: ERROR:  multiple primary keys for table "Receipt" are not allowed
+psql:db_backup/restore_neon_v2.sql:1460: ERROR:  multiple primary keys for table "SubTreatmentType" are not allowed
+psql:db_backup/restore_neon_v2.sql:1468: ERROR:  multiple primary keys for table "TreatmentType" are not allowed
+psql:db_backup/restore_neon_v2.sql:1476: ERROR:  multiple primary keys for table "User" are not allowed
+psql:db_backup/restore_neon_v2.sql:1483: ERROR:  relation "DoctorAvailability_DoctorID_DayOfWeek_key" already exists
+psql:db_backup/restore_neon_v2.sql:1490: ERROR:  relation "LabTest_TestCode_key" already exists
+psql:db_backup/restore_neon_v2.sql:1497: ERROR:  relation "Prescription_OPDID_key" already exists
+psql:db_backup/restore_neon_v2.sql:1504: ERROR:  relation "User_Email_key" already exists
+psql:db_backup/restore_neon_v2.sql:1512: ERROR:  constraint "DiagnosisType_HospitalID_fkey" for relation "DiagnosisType" already exists
+psql:db_backup/restore_neon_v2.sql:1520: ERROR:  constraint "DoctorAvailability_DoctorID_fkey" for relation "DoctorAvailability" already exists
+psql:db_backup/restore_neon_v2.sql:1528: ERROR:  constraint "Doctor_HospitalID_fkey" for relation "Doctor" already exists
+psql:db_backup/restore_neon_v2.sql:1536: ERROR:  constraint "LabOrderItem_OrderID_fkey" for relation "LabOrderItem" already exists
+psql:db_backup/restore_neon_v2.sql:1544: ERROR:  constraint "LabOrderItem_TestID_fkey" for relation "LabOrderItem" already exists
+psql:db_backup/restore_neon_v2.sql:1552: ERROR:  constraint "LabOrder_OPDID_fkey" for relation "LabOrder" already exists
+psql:db_backup/restore_neon_v2.sql:1560: ERROR:  constraint "LabTest_CategoryID_fkey" for relation "LabTest" already exists
+psql:db_backup/restore_neon_v2.sql:1568: ERROR:  constraint "OPDDiagnosisType_DiagnosisTypeID_fkey" for relation "OPDDiagnosisType" already exists
+psql:db_backup/restore_neon_v2.sql:1576: ERROR:  constraint "OPDDiagnosisType_OPDID_fkey" for relation "OPDDiagnosisType" already exists
+psql:db_backup/restore_neon_v2.sql:1584: ERROR:  constraint "OPD_PatientID_fkey" for relation "OPD" already exists
+psql:db_backup/restore_neon_v2.sql:1592: ERROR:  constraint "OPD_TreatedByDoctorID_fkey" for relation "OPD" already exists
+psql:db_backup/restore_neon_v2.sql:1600: ERROR:  constraint "Patient_HospitalID_fkey" for relation "Patient" already exists
+psql:db_backup/restore_neon_v2.sql:1608: ERROR:  constraint "PrescriptionMedicine_MedicineID_fkey" for relation "PrescriptionMedicine" already exists
+psql:db_backup/restore_neon_v2.sql:1616: ERROR:  constraint "PrescriptionMedicine_PrescriptionID_fkey" for relation "PrescriptionMedicine" already exists
+psql:db_backup/restore_neon_v2.sql:1624: ERROR:  constraint "Prescription_OPDID_fkey" for relation "Prescription" already exists
+psql:db_backup/restore_neon_v2.sql:1632: ERROR:  constraint "ReceiptTran_ReceiptID_fkey" for relation "ReceiptTran" already exists
+psql:db_backup/restore_neon_v2.sql:1640: ERROR:  constraint "ReceiptTran_SubTreatmentTypeID_fkey" for relation "ReceiptTran" already exists
+psql:db_backup/restore_neon_v2.sql:1648: ERROR:  constraint "Receipt_OPDID_fkey" for relation "Receipt" already exists
+psql:db_backup/restore_neon_v2.sql:1656: ERROR:  constraint "SubTreatmentType_TreatmentTypeID_fkey" for relation "SubTreatmentType" already exists
+psql:db_backup/restore_neon_v2.sql:1664: ERROR:  constraint "TreatmentType_HospitalID_fkey" for relation "TreatmentType" already exists
+REVOKE
+psql:db_backup/restore_neon_v2.sql:1678: error: \unrestrict: not currently in restricted mode

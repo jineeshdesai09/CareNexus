@@ -1,9 +1,12 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/app/lib/session";
+import { recordAuditLog } from "@/app/lib/audit";
 import { redirect } from "next/navigation";
 
 export async function updateHospital(formData: FormData) {
+  const userId = await getSession();
   const hospitalId = Number(formData.get("hospitalId"));
 
   await prisma.hospital.update({
@@ -28,6 +31,15 @@ export async function updateHospital(formData: FormData) {
         formData.get("IsRegistrationFeeEnableInOPD") === "on",
     },
   });
+
+  if (userId) {
+    await recordAuditLog({
+        Action: "UPDATE",
+        Module: "HOSPITAL",
+        UserID: userId,
+        Details: `Updated Hospital Settings for: ${formData.get("HospitalName")}`
+    });
+  }
 
   redirect("/admin/hospital?success=1");
 }

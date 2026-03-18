@@ -62,17 +62,17 @@ export default function ReceptionOPDForm({ doctors }: { doctors: Doctor[] }) {
                                 </span>
                                 <h2 className="text-xl font-bold text-gray-800">Initial Vitals</h2>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-600 flex items-center gap-2">
                                         <Weight className="w-4 h-4 text-emerald-500" />
                                         Weight (kg)
                                     </label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         step="0.1"
-                                        name="Weight" 
+                                        name="Weight"
                                         placeholder="e.g. 65.5"
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:outline-none font-bold"
                                     />
@@ -82,9 +82,9 @@ export default function ReceptionOPDForm({ doctors }: { doctors: Doctor[] }) {
                                         <Activity className="w-4 h-4 text-blue-500" />
                                         SpO2 (%)
                                     </label>
-                                    <input 
-                                        type="number" 
-                                        name="SpO2" 
+                                    <input
+                                        type="number"
+                                        name="SpO2"
                                         placeholder="e.g. 98"
                                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold"
                                     />
@@ -94,20 +94,19 @@ export default function ReceptionOPDForm({ doctors }: { doctors: Doctor[] }) {
                                         <Ruler className="w-4 h-4 text-indigo-500" />
                                         Height (cm)
                                     </label>
-                                    <input 
-                                        type="number" 
+                                    <input
+                                        type="number"
                                         step="0.1"
-                                        name="Height" 
+                                        name="Height"
                                         defaultValue={selectedPatient.Height || ""}
                                         placeholder="e.g. 175"
-                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold transition-colors ${
-                                            selectedPatient.Height 
-                                                ? "bg-slate-100 border-slate-200 text-slate-500" 
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold transition-colors ${selectedPatient.Height
+                                                ? "bg-slate-100 border-slate-200 text-slate-500"
                                                 : "bg-gray-50 border-gray-200 text-gray-900"
-                                        }`}
-                                        // Still allow editing even if it exists, as height can change, 
-                                        // but the user said "entered first time only when new", 
-                                        // so we auto-fill and visually distinguish it.
+                                            }`}
+                                    // Still allow editing even if it exists, as height can change, 
+                                    // but the user said "entered first time only when new", 
+                                    // so we auto-fill and visually distinguish it.
                                     />
                                     {selectedPatient.Height && (
                                         <p className="text-[10px] text-slate-400 font-medium">Auto-filled from records</p>
@@ -157,53 +156,76 @@ export default function ReceptionOPDForm({ doctors }: { doctors: Doctor[] }) {
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
                     <div className="flex items-center gap-2 mb-2">
                         <AlertCircle className="w-4 h-4 text-orange-500" />
-                        <h3 className="font-bold text-gray-800">Visit Info</h3>
+                        <h3 className="font-bold text-gray-800">Visit & Appointment Info</h3>
                     </div>
 
                     <div className="space-y-4">
-                        <label className="flex items-center justify-between p-4 bg-red-50/50 border border-red-100 rounded-xl cursor-pointer hover:bg-red-50 transition group">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xl">🚨</span>
-                                <span className="font-bold text-red-900">Emergency</span>
+                        <div className="grid grid-cols-1 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Appointment Date</label>
+                                <input
+                                    type="date"
+                                    name="AppointmentDate"
+                                    defaultValue={new Date().toISOString().split('T')[0]}
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold"
+                                />
                             </div>
-                            <input type="checkbox" name="IsEmergency" className="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-500" />
-                        </label>
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Appointment Time</label>
+                                <input
+                                    type="text"
+                                    name="AppointmentTime"
+                                    placeholder="e.g. 10:30 AM"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 font-bold"
+                                />
+                                <p className="text-[10px] text-slate-400 font-medium">Format: HH:MM AM/PM (e.g. 09:30 AM)</p>
+                            </div>
+                        </div>
 
-                        <label className="flex items-center justify-between p-4 bg-blue-50/50 border border-blue-100 rounded-xl cursor-pointer hover:bg-blue-50 transition group">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xl">🔄</span>
-                                <span className="font-bold text-blue-900">Follow-up Visit</span>
-                            </div>
-                            <input type="checkbox" name="IsFollowUpCase" className="h-5 w-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500" />
-                        </label>
+                        <div className="pt-2 flex flex-col gap-3">
+                            <label className="flex items-center justify-between p-4 bg-red-50/50 border border-red-100 rounded-xl cursor-pointer hover:bg-red-50 transition group">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xl">🚨</span>
+                                    <span className="font-bold text-red-900">Emergency</span>
+                                </div>
+                                <input type="checkbox" name="IsEmergency" className="h-5 w-5 rounded border-red-300 text-red-600 focus:ring-red-500" />
+                            </label>
+
+                            <label className="flex items-center justify-between p-4 bg-blue-50/50 border border-blue-100 rounded-xl cursor-pointer hover:bg-blue-50 transition group">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-xl">🔄</span>
+                                    <span className="font-bold text-blue-900">Follow-up Visit</span>
+                                </div>
+                                <input type="checkbox" name="IsFollowUpCase" className="h-5 w-5 rounded border-blue-300 text-blue-600 focus:ring-blue-500" />
+                            </label>
+                        </div>
+
+                        <div className="pt-4">
+                            <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
+                                <FileText className="w-3 h-3" /> Brief Complaints
+                            </label>
+                            <textarea
+                                name="Description"
+                                rows={3}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition font-bold"
+                                placeholder="Enter patient complaints..."
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200 active:scale-[0.98]"
+                        >
+                            Confirm Registration
+                        </button>
                     </div>
 
-                    <div className="pt-4">
-                        <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-1">
-                            <FileText className="w-3 h-3" /> Brief Complaints
-                        </label>
-                        <textarea
-                            name="Description"
-                            rows={3}
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none transition font-bold"
-                            placeholder="Enter patient complaints..."
-                        />
+                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                        <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                            * Tokens are automatically generated based on the current queue and emergency status.
+                        </p>
                     </div>
-
-                    <button
-                        type="submit"
-                        className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg shadow-blue-200 active:scale-[0.98]"
-                    >
-                        Confirm Registration
-                    </button>
                 </div>
-
-                <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                    <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                        * Tokens are automatically generated based on the current queue and emergency status.
-                    </p>
-                </div>
-            </div>
         </form>
     );
 }

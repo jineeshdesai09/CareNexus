@@ -12,7 +12,7 @@ export default function AddStaffPage() {
         </div>
         <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight mb-4">Add Medical Staff</h1>
         <p className="text-slate-500 text-lg">
-          Securely register new pharmacists and lab technicians to the system. 
+          Securely register new doctors and receptionists to the system. 
           Staff members can log in immediately after creation.
         </p>
       </div>

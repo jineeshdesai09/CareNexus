@@ -10,6 +10,8 @@ import OrderLabTestForm from "./OrderLabTestForm";
 import PrintDraftButton from "./PrintDraftButton";
 import ConsultationFooter from "./ConsultationFooter";
 import { getLabTestCatalog } from "@/app/actions/lab";
+import { getPrescriptionTemplates } from "@/app/actions/prescriptionTemplate";
+import VitalsChart from "./VitalsChart";
 
 export const runtime = "nodejs";
 
@@ -106,8 +108,31 @@ export default async function ConsultationPage({
         orderBy: { Name: "asc" },
     });
 
+    const templates = await getPrescriptionTemplates(opd.TreatedByDoctorID);
+
+    // Prepare Vitals History for Graphing
+    const vitalsHistory = [...serializedPastOpds.map(p => ({
+        OPDDateTime: p.OPDDateTime,
+        Weight: p.Weight,
+        BP_Systolic: p.BP_Systolic,
+    })), {
+        OPDDateTime: opd.OPDDateTime,
+        Weight: opd.Weight ? Number(opd.Weight) : null,
+        BP_Systolic: opd.BP_Systolic,
+    }].sort((a, b) => new Date(a.OPDDateTime).getTime() - new Date(b.OPDDateTime).getTime());
+
+    const weightTrend = vitalsHistory.map(v => ({
+        date: new Date(v.OPDDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: v.Weight
+    }));
+
+    const bpTrend = vitalsHistory.map(v => ({
+        date: new Date(v.OPDDateTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        value: v.BP_Systolic ? Number(v.BP_Systolic) : null
+    }));
+
     // Serialize pastOpds to handle Prisma Decimal types
-    const serializedPastOpds = pastOpds.map(p => ({
+    const serializedPastOpdsForDrawer = pastOpds.map(p => ({
         ...p,
         Weight: p.Weight ? Number(p.Weight) : null,
         Temperature: p.Temperature ? Number(p.Temperature) : null,
@@ -165,7 +190,7 @@ export default async function ConsultationPage({
                         <div className="bg-emerald-600 p-10 text-center text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                             <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
-                            
+
                             <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md">
                                 <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3"></path></svg>
                             </div>
@@ -215,7 +240,7 @@ export default async function ConsultationPage({
     return (
         <form action={finishConsultation} className="min-h-full pb-32 bg-slate-50 font-inter relative">
             <input type="hidden" name="OPDID" value={opd.OPDID} />
-            
+
             {/* BEGIN: MainHeader */}
             <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -325,21 +350,31 @@ export default async function ConsultationPage({
 
                     {/* BEGIN: RightColumn - Main Content */}
                     <div className="lg:col-span-9 space-y-6">
-                        
+
+                        {/* Vitals Trends */}
+                        {(weightTrend.filter(d => d.value !== null).length >= 2 || bpTrend.filter(d => d.value !== null).length >= 2) && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <VitalsChart data={weightTrend} label="Weight Analysis" unit="kg" color="#10b981" />
+                                <VitalsChart data={bpTrend} label="BP Systolic Analysis" unit="mmHg" color="#ef4444" />
+                            </div>
+                        )}
+
                         {/* Prescription Section */}
                         <section className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                            <PrescriptionForm 
-                                medicines={medicines} 
+                            <PrescriptionForm
+                                medicines={medicines}
+                                doctorID={opd.TreatedByDoctorID}
+                                templates={templates}
                                 defaultFollowUpDate={opd.FollowUpDate ? opd.FollowUpDate.toISOString().split("T")[0] : ""}
                                 defaultVitals={{
-                                   BP_Systolic: opd.BP_Systolic,
-                                   BP_Diastolic: opd.BP_Diastolic,
-                                   Temperature: opd.Temperature ? Number(opd.Temperature) : null,
-                                   Pulse: opd.Pulse,
-                                   Weight: opd.Weight ? Number(opd.Weight) : null,
-                                   SpO2: opd.SpO2,
-                                   Height: (opd.Height ? Number(opd.Height) : null) || (opd.Patient.Height ? Number(opd.Patient.Height) : null)
-                                }}                                initialMedicines={opd.prescription?.Medicines.map(m => ({
+                                    BP_Systolic: opd.BP_Systolic,
+                                    BP_Diastolic: opd.BP_Diastolic,
+                                    Temperature: opd.Temperature ? Number(opd.Temperature) : null,
+                                    Pulse: opd.Pulse,
+                                    Weight: opd.Weight ? Number(opd.Weight) : null,
+                                    SpO2: opd.SpO2,
+                                    Height: (opd.Height ? Number(opd.Height) : null) || (opd.Patient.Height ? Number(opd.Patient.Height) : null)
+                                }} initialMedicines={opd.prescription?.Medicines.map(m => ({
                                     MedicineName: m.Medicine?.Name || m.MedicineName || "",
                                     Dosage: m.Dosage,
                                     Frequency: m.Frequency,

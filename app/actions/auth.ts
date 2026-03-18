@@ -41,10 +41,6 @@ export async function login(formData: FormData) {
       redirect("/reception/dashboard");
     case "PATIENT":
       redirect("/patient/dashboard");
-    case "PHARMACIST":
-      redirect("/pharmacy/dashboard");
-    case "LAB_TECHNICIAN":
-      redirect("/lab/dashboard");
     default:
       redirect("/login");
   }
@@ -56,7 +52,7 @@ export async function register(formData: FormData) {
   const password = String(formData.get("password"));
   const role = String(formData.get("role")) as Role;
   
-  if (["PHARMACIST", "LAB_TECHNICIAN", "ADMIN"].includes(role)) {
+  if (role === "ADMIN") {
     redirect("/register?error=restricted");
   }
 

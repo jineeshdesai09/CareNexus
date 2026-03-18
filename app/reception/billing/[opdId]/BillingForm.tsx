@@ -24,6 +24,7 @@ interface BillingFormProps {
 
 export default function BillingForm({ opdId, baseTotal, treatments, isRateEnabled = true }: BillingFormProps) {
     const [selectedServices, setSelectedServices] = useState<Record<number, { checked: boolean, quantity: number, rate: number }>>({});
+    const [isInsurance, setIsInsurance] = useState(false);
 
     const handleServiceToggle = (id: number, rate: number, checked: boolean) => {
         setSelectedServices(prev => ({
@@ -111,10 +112,44 @@ export default function BillingForm({ opdId, baseTotal, treatments, isRateEnable
                 </div>
             </div>
 
-            <div className="border-t pt-6 space-y-4">
+            <div className="border-t pt-6 space-y-6">
+                {/* Insurance / TPA */}
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-4">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                        <input 
+                            type="checkbox" 
+                            checked={isInsurance} 
+                            onChange={(e) => setIsInsurance(e.target.checked)}
+                            className="h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500" 
+                        />
+                        <span className="font-bold text-slate-700">Apply Insurance / TPA (Third Party Administrator)</span>
+                    </label>
+
+                    {isInsurance && (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2">
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase">Insurance Provider</label>
+                                <input type="text" name="InsuranceProvider" className="w-full p-3 rounded-xl border-slate-200 font-bold focus:ring-2 focus:ring-blue-500" placeholder="e.g. Star Health" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase">Policy / Claim No</label>
+                                <input type="text" name="PolicyNo" className="w-full p-3 rounded-xl border-slate-200 font-bold focus:ring-2 focus:ring-blue-500" placeholder="POL-123456" />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-slate-400 uppercase">Claim Status</label>
+                                <select name="ClaimStatus" className="w-full p-3 rounded-xl border-slate-200 font-bold focus:ring-2 focus:ring-blue-500">
+                                    <option value="PENDING">Pending Approval</option>
+                                    <option value="APPROVED">Approved</option>
+                                    <option value="REJECTED">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Receipt Notes</label>
-                    <input type="text" name="Description" className="w-full px-4 py-2 border rounded-lg" placeholder="Optional notes for this receipt..." />
+                    <label className="block text-sm font-medium text-gray-700 mb-1 font-bold">Receipt Notes</label>
+                    <input type="text" name="Description" className="w-full px-4 py-3 border border-slate-200 rounded-xl font-bold" placeholder="Optional notes for this receipt..." />
                 </div>
 
                 {/* Amount Display */}

@@ -48,21 +48,9 @@ export default async function DoctorLayout({
             href="/doctor/staff?role=receptionist"
             className="block p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:translate-x-1 text-sm"
           >
-            Receptionists
+            My Receptionists
           </Link>
-          <Link
-            href="/doctor/staff?role=pharmacist"
-            className="block p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:translate-x-1 text-sm"
-          >
-            Medical Store
-          </Link>
-          <Link
-            href="/doctor/staff?role=lab"
-            className="block p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:translate-x-1 text-sm"
-          >
-            Laboratories
-          </Link>
-          
+
           <Link
             href="/doctor/staff/add"
             className="block p-3 hover:bg-gray-800 rounded-xl transition-all duration-200 hover:translate-x-1 text-sm text-blue-400 font-semibold"

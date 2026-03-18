@@ -135,7 +135,7 @@ export async function getDoctorsBySpecialization(specialization: string) {
   }));
 }
 
-export async function bookAppointment(doctorId: number, dateStr: string, reason: string) {
+export async function bookAppointment(doctorId: number, dateStr: string, reason: string, timeStr?: string) {
   const user = await getCurrentUser();
   if (!user || user.Role !== "PATIENT") throw new Error("Unauthorized");
 
@@ -145,13 +145,21 @@ export async function bookAppointment(doctorId: number, dateStr: string, reason:
 
   if (!patient) throw new Error("Patient profile not found");
 
-  // Parse "YYYY-MM-DD" to a safe mid-day local time so it reliably falls on "Today" for dashboard queries
+  // Parse Date and Time
   let date: Date;
-  if (dateStr.includes("T")) {
-    date = new Date(dateStr); // Fallback for old ISO string payloads
+  const [year, month, day] = dateStr.split("-").map(Number);
+  
+  if (timeStr) {
+      // timeStr format: "09:30 AM" or "02:15 PM"
+      const [time, period] = timeStr.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      
+      if (period === "PM" && hours < 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      
+      date = new Date(year, month - 1, day, hours, minutes, 0);
   } else {
-    const [year, month, day] = dateStr.split("-").map(Number);
-    date = new Date(year, month - 1, day, 12, 0, 0); // Noon
+      date = new Date(year, month - 1, day, 12, 0, 0); // Default to Noon
   }
   
   const dayOfWeek = date.getDay(); // 0-6
@@ -280,4 +288,41 @@ export async function cancelAppointment(opdId: number) {
 
   revalidatePath("/patient/appointments");
   return { success: true };
+}
+
+export async function updatePatientProfile(data: {
+    MobileNo: string;
+    EmergencyContactNo?: string;
+    Occupation?: string;
+    Address?: string;
+    PinCode?: string;
+    Height?: number | null;
+    BloodGroup?: string;
+}) {
+    const user = await getCurrentUser();
+    if (!user || user.Role !== "PATIENT") throw new Error("Unauthorized");
+
+    const patient = await prisma.patient.findFirst({
+        where: { UserID: user.UserID }
+    });
+
+    if (!patient) throw new Error("Patient profile not found");
+
+    await prisma.patient.update({
+        where: { PatientID: patient.PatientID },
+        data: {
+            MobileNo: data.MobileNo,
+            EmergencyContactNo: data.EmergencyContactNo,
+            Occupation: data.Occupation,
+            Address: data.Address,
+            PinCode: data.PinCode,
+            Height: data.Height,
+            BloodGroup: data.BloodGroup
+        }
+    });
+
+    revalidatePath("/patient", "layout");
+    revalidatePath("/doctor", "layout");
+    revalidatePath("/reception", "layout");
+    return { success: true };
 }

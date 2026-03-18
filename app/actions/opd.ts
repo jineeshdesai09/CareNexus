@@ -23,17 +23,34 @@ export async function createOPD(formData: FormData) {
   const spo2 = formData.get("SpO2") ? Number(formData.get("SpO2")) : null;
   const height = formData.get("Height") ? Number(formData.get("Height")) : null;
 
+  const apptDateStr = formData.get("AppointmentDate") as string; // YYYY-MM-DD
+  const apptTimeStr = formData.get("AppointmentTime") as string; // HH:mm or HH:mm AM/PM
+
+  let opdDateTime = new Date();
+  if (apptDateStr) {
+    const [y, m, d] = apptDateStr.split("-").map(Number);
+    opdDateTime = new Date(y, m - 1, d, 12, 0, 0); // Start at noon
+
+    if (apptTimeStr) {
+      // Handle "09:30 AM" or "14:30"
+      const timeParts = apptTimeStr.split(" ");
+      let [hours, minutes] = timeParts[0].split(":").map(Number);
+      if (timeParts[1] === "PM" && hours < 12) hours += 12;
+      if (timeParts[1] === "AM" && hours === 12) hours = 0;
+      opdDateTime.setHours(hours, minutes, 0, 0);
+    }
+  }
+
   if (!patientId || !doctorId) {
     throw new Error("Patient and Doctor required");
   }
 
-
   await prisma.$transaction(async (tx) => {
     let tokenNo: number;
 
-    const startOfDay = new Date();
+    const startOfDay = new Date(opdDateTime);
     startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date();
+    const endOfDay = new Date(opdDateTime);
     endOfDay.setHours(23, 59, 59, 999);
 
     if (isEmergency) {
@@ -57,10 +74,10 @@ export async function createOPD(formData: FormData) {
     const registrationFee = isFeeEnabled ? Number(hospital?.RegistrationCharge ?? 0) : 0;
 
     const dailyCount = await tx.oPD.count({
-      where: { Created: { gte: startOfDay, lte: endOfDay } }
+      where: { OPDDateTime: { gte: startOfDay, lte: endOfDay } }
     });
 
-    const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    const dateStr = opdDateTime.toISOString().slice(0, 10).replace(/-/g, "");
     const baseNo = hospital?.OpeningOPDNo || 1000;
     const opdNo = `OPD-${dateStr}-${baseNo + dailyCount + 1}`;
 
@@ -72,12 +89,17 @@ export async function createOPD(formData: FormData) {
       });
     }
 
+    // Determine Status: If today, WAITING. If future, REGISTERED.
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const status = opdDateTime < new Date(today.getTime() + 24 * 60 * 60 * 1000) ? "WAITING" : "REGISTERED";
+
     await tx.oPD.create({
       data: {
         OPDNo: opdNo,
-        OPDDateTime: new Date(),
+        OPDDateTime: opdDateTime,
         TokenNo: tokenNo,
-        Status: "WAITING",
+        Status: status,
         IsEmergency: isEmergency,
         IsFollowUpCase: isFollowUp,
         Description: description,

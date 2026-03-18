@@ -19,14 +19,7 @@ export default async function DoctorStaffPage({
     const { role } = await searchParams;
     const activeTab = role || "receptionist";
 
-    // Map the tab to the Role enum
-    const roleMapping: Record<string, any> = {
-        receptionist: "RECEPTIONIST",
-        pharmacist: "PHARMACIST",
-        lab: "LAB_TECHNICIAN",
-    };
-
-    const targetRole = roleMapping[activeTab] || "RECEPTIONIST";
+    const targetRole = "RECEPTIONIST";
 
     // Fetch all staff for this role
     const staff = await prisma.user.findMany({
@@ -45,41 +38,15 @@ export default async function DoctorStaffPage({
                 <p className="text-slate-500 font-medium">View and manage your hospital support team.</p>
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-2 p-1.5 bg-slate-100 w-fit rounded-2xl">
-                <Link
-                    href="/doctor/staff?role=receptionist"
-                    className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
-                        activeTab === "receptionist"
-                            ? "bg-white text-blue-600 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                    }`}
-                >
-                    <Users className="w-4 h-4" />
-                    Receptionists
-                </Link>
-                <Link
-                    href="/doctor/staff?role=pharmacist"
-                    className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
-                        activeTab === "pharmacist"
-                            ? "bg-white text-indigo-600 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                    }`}
-                >
-                    <ShoppingBag className="w-4 h-4" />
-                    Medical Store
-                </Link>
-                <Link
-                    href="/doctor/staff?role=lab"
-                    className={`px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 ${
-                        activeTab === "lab"
-                            ? "bg-white text-teal-600 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
-                    }`}
-                >
-                    <FlaskConical className="w-4 h-4" />
-                    Laboratories
-                </Link>
+            {/* Role Header */}
+            <div className="flex items-center gap-3 p-4 bg-white border border-slate-100 rounded-3xl shadow-sm w-fit">
+                <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center font-black">
+                    <Users className="w-5 h-5" />
+                </div>
+                <div>
+                    <h2 className="font-black text-slate-900 leading-none">Receptionists</h2>
+                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Hospital Front-desk</p>
+                </div>
             </div>
 
             {/* Staff List */}
@@ -89,15 +56,15 @@ export default async function DoctorStaffPage({
                         <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-200 mb-6">
                             <User className="w-10 h-10" />
                         </div>
-                        <h3 className="text-xl font-black text-slate-900 mb-2">No Staff Registered</h3>
+                        <h3 className="text-xl font-black text-slate-900 mb-2">No Receptionists Registered</h3>
                         <p className="text-slate-400 font-medium max-w-xs mx-auto mb-8">
-                            We couldn't find any {activeTab}s registered in the system.
+                            We couldn't find any receptionists registered in the system.
                         </p>
                         <Link 
                             href="/doctor/staff/add"
                             className="px-8 py-3 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all active:scale-95"
                         >
-                            + Register {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                            + Register Receptionist
                         </Link>
                     </div>
                 ) : (
@@ -135,7 +102,7 @@ export default async function DoctorStaffPage({
                                         </td>
                                         <td className="px-8 py-6">
                                             <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border ${
-                                                s.Status === 'ACTIVE' 
+                                                s.Status === 'ACTIVE' || s.Status === 'APPROVED'
                                                     ? 'bg-green-50 text-green-700 border-green-100' 
                                                     : 'bg-amber-50 text-amber-700 border-amber-100'
                                             }`}>

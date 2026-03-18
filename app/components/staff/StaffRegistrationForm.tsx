@@ -32,7 +32,7 @@ export default function StaffRegistrationForm() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-slate-900">Add Staff Member</h2>
-            <p className="text-slate-500 text-sm">Create accounts for Pharmacists and Lab Technicians</p>
+            <p className="text-slate-500 text-sm">Create accounts for Doctors and Receptionists</p>
           </div>
         </div>
       </div>
@@ -65,8 +65,8 @@ export default function StaffRegistrationForm() {
               required
               className="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 transition-all text-sm"
             >
-              <option value="PHARMACIST">Pharmacist</option>
-              <option value="LAB_TECHNICIAN">Lab Technician</option>
+              <option value="DOCTOR">Doctor</option>
+              <option value="RECEPTIONIST">Receptionist</option>
             </select>
           </div>
         </div>

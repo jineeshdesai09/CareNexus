@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, Calendar, Heart, Thermometer, Activity, Weight as WeightIcon, Ruler } from "lucide-react";
+import { Plus, Trash2, Calendar, Heart, Thermometer, Activity, Weight as WeightIcon, Ruler, Save, Copy } from "lucide-react";
+import { savePrescriptionTemplate } from "@/app/actions/prescriptionTemplate";
 
 interface Medicine {
     MedicineID: number;
@@ -12,6 +13,8 @@ interface Medicine {
 
 interface PrescriptionFormProps {
     medicines: Medicine[];
+    doctorID: number;
+    templates: any[];
     defaultFollowUpDate?: string;
     defaultVitals?: {
         BP_Systolic?: number | null;
@@ -32,7 +35,14 @@ interface PrescriptionFormProps {
     initialNotes?: string;
 }
 
-export default function PrescriptionForm({ defaultFollowUpDate, defaultVitals, initialMedicines = [], initialNotes = "" }: PrescriptionFormProps) {
+export default function PrescriptionForm({ 
+    doctorID, 
+    templates = [], 
+    defaultFollowUpDate, 
+    defaultVitals, 
+    initialMedicines = [], 
+    initialNotes = "" 
+}: PrescriptionFormProps) {
     const [selectedMedicines, setSelectedMedicines] = useState<{
         MedicineName: string;
         Dosage: string;
@@ -40,6 +50,8 @@ export default function PrescriptionForm({ defaultFollowUpDate, defaultVitals, i
         Duration: string;
         Instructions: string;
     }[]>(initialMedicines);
+    const [currentTemplates, setCurrentTemplates] = useState(templates);
+    const [isSavingTemplate, setIsSavingTemplate] = useState(false);
 
     const addMedicine = () => {
         setSelectedMedicines([
@@ -56,6 +68,40 @@ export default function PrescriptionForm({ defaultFollowUpDate, defaultVitals, i
         const newMedicines = [...selectedMedicines];
         newMedicines[index] = { ...newMedicines[index], [field]: value };
         setSelectedMedicines(newMedicines);
+    };
+
+    const handleLoadTemplate = (templateID: string) => {
+        const template = currentTemplates.find(t => t.TemplateID.toString() === templateID);
+        if (template) {
+            const templateMedicines = template.Medicines.map((m: any) => ({
+                MedicineName: m.MedicineName,
+                Dosage: m.Dosage,
+                Frequency: m.Frequency,
+                Duration: m.Duration,
+                Instructions: m.Instructions || "After Food"
+            }));
+            setSelectedMedicines(templateMedicines);
+        }
+    };
+
+    const handleSaveTemplate = async () => {
+        const name = prompt("Enter a name for this template (e.g., Fever Kit, Diabetic Routine):");
+        if (!name) return;
+
+        setIsSavingTemplate(true);
+        const result = await savePrescriptionTemplate({
+            TemplateName: name,
+            DoctorID: doctorID,
+            Medicines: selectedMedicines
+        });
+
+        if (result.success) {
+            setCurrentTemplates([...currentTemplates, result.template]);
+            alert("Template saved successfully!");
+        } else {
+            alert("Failed to save template.");
+        }
+        setIsSavingTemplate(false);
     };
 
     return (
@@ -151,14 +197,41 @@ export default function PrescriptionForm({ defaultFollowUpDate, defaultVitals, i
 
             <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                 <h3 className="text-xl font-bold text-slate-800">Prescription</h3>
-                <button
-                    type="button"
-                    onClick={addMedicine}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-sm"
-                >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Medicine
-                </button>
+                <div className="flex items-center gap-3">
+                    {currentTemplates.length > 0 && (
+                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm">
+                            <Copy className="w-4 h-4 text-slate-400" />
+                            <select 
+                                onChange={(e) => handleLoadTemplate(e.target.value)}
+                                className="border-none bg-transparent text-sm font-bold text-slate-700 focus:ring-0 py-1 pl-1 pr-8"
+                                defaultValue=""
+                            >
+                                <option value="" disabled>Load Template...</option>
+                                {currentTemplates.map(t => (
+                                    <option key={t.TemplateID} value={t.TemplateID}>{t.TemplateName}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+                    <button
+                        type="button"
+                        onClick={handleSaveTemplate}
+                        disabled={selectedMedicines.length === 0 || isSavingTemplate}
+                        className="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-lg text-sm font-bold hover:bg-indigo-100 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Save current prescription as a template"
+                    >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save as Template
+                    </button>
+                    <button
+                        type="button"
+                        onClick={addMedicine}
+                        className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 transition shadow-sm"
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Medicine
+                    </button>
+                </div>
             </div>
 
             <div className="overflow-x-auto">

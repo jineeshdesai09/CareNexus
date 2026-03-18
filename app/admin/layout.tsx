@@ -51,6 +51,10 @@ export default async function AdminLayout({
           <Link href="/admin/reports" className="block hover:text-blue-400">
             Reports & Analytics
           </Link>
+
+          <Link href="/admin/audit-logs" className="block hover:text-blue-400">
+            Audit Logs
+          </Link>
         </nav>
         <div className="mb-6 text-sm text-gray-300">
           Logged in as <br />

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "../lib/session";
 import { redirect } from "next/navigation";
 import bcrypt from "bcrypt";
+import { recordAuditLog } from "@/app/lib/audit";
 
 export async function createDoctor(formData: FormData) {
   const userId = await getSession();
@@ -66,6 +67,13 @@ export async function createDoctor(formData: FormData) {
     },
   });
 
+  await recordAuditLog({
+    Action: "CREATE",
+    Module: "DOCTOR_MANAGEMENT",
+    UserID: userId,
+    Details: `Created doctor profile: Dr. ${firstName} ${lastName} (${email})`
+  });
+
   redirect("/admin/doctors");
 }
 
@@ -78,12 +86,14 @@ export async function updateDoctor(formData: FormData) {
   if (!caller || caller.Role !== "ADMIN") throw new Error("Forbidden: Admin only");
 
   const doctorId = Number(formData.get("DoctorID"));
+  const firstName = String(formData.get("FirstName"));
+  const lastName = String(formData.get("LastName"));
 
   await prisma.doctor.update({
     where: { DoctorID: doctorId },
     data: {
-      FirstName: String(formData.get("FirstName")),
-      LastName: String(formData.get("LastName")),
+      FirstName: firstName,
+      LastName: lastName,
       DOB: formData.get("DOB")
         ? new Date(String(formData.get("DOB")))
         : null,
@@ -102,6 +112,13 @@ export async function updateDoctor(formData: FormData) {
 
       AboutDoctor: String(formData.get("AboutDoctor") ?? ""),
     },
+  });
+
+  await recordAuditLog({
+    Action: "UPDATE",
+    Module: "DOCTOR_MANAGEMENT",
+    UserID: userId,
+    Details: `Updated doctor profile: Dr. ${firstName} ${lastName}`
   });
 
   redirect("/admin/doctors");

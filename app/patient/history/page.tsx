@@ -38,7 +38,8 @@ export default async function PatientHistory() {
           LastName: true,
           Specialization: true
         }
-      }
+      },
+      Receipts: true
     }
   });
 
@@ -67,64 +68,79 @@ export default async function PatientHistory() {
                   <th className="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Visit Date</th>
                   <th className="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Doctor</th>
                   <th className="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Token</th>
+                  <th className="px-8 py-5 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest">Billed Amount</th>
                   <th className="px-8 py-5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
                   <th className="px-8 py-5 text-right text-[10px] font-bold text-slate-400 uppercase tracking-widest">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {history.map((visit) => (
-                  <tr key={visit.OPDID} className="hover:bg-blue-50/30 transition-colors group">
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-blue-600 transition-colors">
-                          <Calendar className="w-5 h-5" />
+                {history.map((visit) => {
+                  const totalPaid = visit.Receipts.reduce((sum, r) => sum + Number(r.AmountPaid), 0);
+                  
+                  return (
+                    <tr key={visit.OPDID} className="hover:bg-blue-50/30 transition-colors group">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-500 group-hover:bg-white group-hover:text-blue-600 transition-colors">
+                            <Calendar className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">
+                              {formatDate(visit.OPDDateTime)}
+                            </p>
+                            <p className="text-xs text-slate-400 font-medium">
+                               {new Date(visit.OPDDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">
-                            {formatDate(visit.OPDDateTime)}
-                          </p>
-                          <p className="text-xs text-slate-400 font-medium">
-                             {new Date(visit.OPDDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                            {visit.Doctor.FirstName.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">Dr. {visit.Doctor.FirstName} {visit.Doctor.LastName}</p>
+                            <p className="text-xs text-slate-400 font-medium">{visit.Doctor.Specialization}</p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                          {visit.Doctor.FirstName.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-slate-900">Dr. {visit.Doctor.FirstName} {visit.Doctor.LastName}</p>
-                          <p className="text-xs text-slate-400 font-medium">{visit.Doctor.Specialization}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-6">
-                      <span className="text-sm font-bold text-slate-500">#{visit.TokenNo}</span>
-                    </td>
-                    <td className="px-8 py-6 text-center">
-                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                        visit.Status === 'COMPLETED' 
-                          ? 'bg-green-100 text-green-700' 
-                          : visit.Status === 'BILLED'
-                          ? 'bg-purple-100 text-purple-700'
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {visit.Status}
-                      </span>
-                    </td>
-                    <td className="px-8 py-6 text-right">
-                      <Link 
-                        href={`/patient/history/${visit.OPDID}`}
-                        className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        Details
-                        <ChevronRight className="w-4 h-4" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className="text-sm font-bold text-slate-500">#{visit.TokenNo}</span>
+                      </td>
+                      <td className="px-8 py-6">
+                        {totalPaid > 0 ? (
+                          <div className="flex flex-col">
+                            <span className="text-sm font-black text-slate-800">₹{totalPaid}</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{visit.Receipts[0].ReceiptNo}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-medium text-slate-300 italic">No bill</span>
+                        )}
+                      </td>
+                      <td className="px-8 py-6 text-center">
+                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                          visit.Status === 'COMPLETED' 
+                            ? 'bg-green-100 text-green-700' 
+                            : visit.Status === 'BILLED'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {visit.Status}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <Link 
+                          href={`/patient/history/${visit.OPDID}`}
+                          className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          Details
+                          <ChevronRight className="w-4 h-4" />
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

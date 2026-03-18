@@ -103,6 +103,34 @@ export default async function OPDQueuePage({
     revalidatePath("/reception/opd/queue");
   };
 
+  // Action for Cancellation & Refund
+  const cancelOPDAction = async (formData: FormData) => {
+    "use server";
+    const opdId = Number(formData.get("opdId"));
+    const { prisma } = await import("@/lib/prisma");
+    const { revalidatePath } = await import("next/cache");
+    
+    await prisma.$transaction(async (tx) => {
+        await tx.oPD.update({
+            where: { OPDID: opdId },
+            data: { Status: "CANCELLED" }
+        });
+
+        const receipt = await tx.receipt.findFirst({ where: { OPDID: opdId } });
+        if (receipt) {
+            await tx.receipt.update({
+                where: { ReceiptID: receipt.ReceiptID },
+                data: {
+                    CancellationDateTime: new Date(),
+                    CancellationRemarks: "OPD Cancelled - Automated Refund Request"
+                }
+            });
+        }
+    });
+    
+    revalidatePath("/reception/opd/queue");
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       {/* Header */}
@@ -196,47 +224,63 @@ export default async function OPDQueuePage({
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      {opd.Status === 'REGISTERED' ? (
-                        <form action={checkInAction}>
-                            <input type="hidden" name="opdId" value={opd.OPDID} />
-                            <button 
-                                type="submit"
-                                className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 active:scale-95"
+                      <div className="flex items-center justify-end gap-3">
+                        {opd.Status === 'REGISTERED' ? (
+                            <form action={checkInAction}>
+                                <input type="hidden" name="opdId" value={opd.OPDID} />
+                                <button 
+                                    type="submit"
+                                    className="inline-flex items-center gap-2 bg-indigo-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-indigo-700 transition shadow-lg shadow-indigo-100 active:scale-95"
+                                >
+                                    <CheckCircle2 className="w-4 h-4" />
+                                    Check In
+                                </button>
+                            </form>
+                        ) : opd.Status === 'COMPLETED' ? (
+                            <Link 
+                            href={`/reception/billing/${opd.OPDID}`} 
+                            className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-green-700 transition shadow-lg shadow-green-100 active:scale-95"
                             >
-                                <CheckCircle2 className="w-4 h-4" />
-                                Check In
-                            </button>
-                        </form>
-                      ) : opd.Status === 'COMPLETED' ? (
-                        <Link 
-                          href={`/reception/billing/${opd.OPDID}`} 
-                          className="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-green-700 transition shadow-lg shadow-green-100 active:scale-95"
-                        >
-                          <Wallet className="w-4 h-4" />
-                          Process Bill
-                        </Link>
-                      ) : opd.Status === 'WAITING' ? (
-                        <form action={callPatientAction}>
-                            <input type="hidden" name="opdId" value={opd.OPDID} />
-                            <button 
-                                type="submit"
-                                className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-blue-700 transition shadow-lg shadow-blue-100 active:scale-95"
-                            >
-                                <Stethoscope className="w-4 h-4" />
-                                Call Now
-                            </button>
-                        </form>
-                      ) : opd.Status === 'BILLED' ? (
-                        <div className="flex items-center justify-end gap-2 text-gray-400 font-bold text-xs uppercase">
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
-                            Settled
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-end gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
-                            <Clock className="w-4 h-4" />
-                            {opd.Status.replace('_', ' ')}
-                        </div>
-                      )}
+                            <Wallet className="w-4 h-4" />
+                            Process Bill
+                            </Link>
+                        ) : opd.Status === 'WAITING' ? (
+                            <form action={callPatientAction}>
+                                <input type="hidden" name="opdId" value={opd.OPDID} />
+                                <button 
+                                    type="submit"
+                                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-blue-700 transition shadow-lg shadow-blue-100 active:scale-95"
+                                >
+                                    <Stethoscope className="w-4 h-4" />
+                                    Call Now
+                                </button>
+                            </form>
+                        ) : opd.Status === 'BILLED' ? (
+                            <div className="flex items-center justify-end gap-2 text-gray-400 font-bold text-xs uppercase tracking-widest">
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                Settled
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-end gap-2 text-slate-400 font-bold text-xs uppercase tracking-widest">
+                                <Clock className="w-4 h-4" />
+                                {opd.Status.replace('_', ' ')}
+                            </div>
+                        )}
+
+                        {/* Universal Cancel Button for active OPDs */}
+                        {(opd.Status === 'REGISTERED' || opd.Status === 'WAITING' || opd.Status === 'COMPLETED') && (
+                            <form action={cancelOPDAction}>
+                                <input type="hidden" name="opdId" value={opd.OPDID} />
+                                <button 
+                                    type="submit"
+                                    className="p-2 text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                    title="Cancel & Refund"
+                                >
+                                    <AlertCircle className="w-5 h-5" />
+                                </button>
+                            </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}

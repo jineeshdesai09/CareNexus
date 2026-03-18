@@ -160,7 +160,6 @@ export default function RegisterPage() {
                   focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                 >
                   <option value="">Select Role</option>
-                  <option value="ADMIN">Admin</option>
                   <option value="DOCTOR">Doctor</option>
                   <option value="RECEPTIONIST">Receptionist</option>
                   <option value="PATIENT">Patient</option>

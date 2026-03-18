@@ -51,6 +51,10 @@ export async function createReceipt(formData: FormData) {
     const servicesTotal = lineItems.reduce((sum, li) => sum + li.Amount, 0);
     const finalTotal = regFee + servicesTotal;
 
+    const insuranceProvider = formData.get("InsuranceProvider") ? String(formData.get("InsuranceProvider")) : null;
+    const policyNo = formData.get("PolicyNo") ? String(formData.get("PolicyNo")) : null;
+    const claimStatus = formData.get("ClaimStatus") ? String(formData.get("ClaimStatus")) : null;
+
     await prisma.receipt.create({
         data: {
             ReceiptNo: `REC-${receiptNo}`,
@@ -60,6 +64,9 @@ export async function createReceipt(formData: FormData) {
             Description: description,
             OPDID: opdId,
             UserID: userId,
+            InsuranceProvider: insuranceProvider,
+            PolicyNo: policyNo,
+            ClaimStatus: claimStatus,
 
             ReceiptTrans: {
                 create: lineItems.map((li) => ({

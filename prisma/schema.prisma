@@ -54,6 +54,7 @@ model Doctor {
   Hospital             Hospital             @relation(fields: [HospitalID], references: [HospitalID])
   Availabilities       DoctorAvailability[]
   OPDs                 OPD[]                @relation("DoctorOPD")
+  PrescriptionTemplates PrescriptionTemplate[]
 }
 
 model DoctorAvailability {
@@ -125,12 +126,12 @@ model OPD {
   SpO2              Int?
   Temperature       Decimal?           @db.Decimal(4, 1)
   Weight            Decimal?           @db.Decimal(5, 2)
+  LabOrders         LabOrder[]
   Patient           Patient            @relation(fields: [PatientID], references: [PatientID])
   Doctor            Doctor             @relation("DoctorOPD", fields: [TreatedByDoctorID], references: [DoctorID])
   Diagnoses         OPDDiagnosisType[]
   prescription      Prescription?
   Receipts          Receipt[]
-  LabOrders         LabOrder[]
 }
 
 model DiagnosisType {
@@ -196,6 +197,9 @@ model Receipt {
   PaymentModeID        Int
   ReferenceNo          String?       @db.VarChar(250)
   ReferenceDate        DateTime?
+  InsuranceProvider    String?       @db.VarChar(250)
+  PolicyNo             String?       @db.VarChar(100)
+  ClaimStatus          String?       @db.VarChar(50)
   CancellationDateTime DateTime?
   CancellationByUserID Int?
   CancellationRemarks  String?       @db.VarChar(500)
@@ -231,6 +235,7 @@ model User {
   Created  DateTime @default(now())
   Modified DateTime @updatedAt
   Status   String   @default("PENDING")
+  AuditLogs AuditLog[]
 }
 
 model Medicine {
@@ -269,13 +274,62 @@ model PrescriptionMedicine {
   Prescription   Prescription @relation(fields: [PrescriptionID], references: [PrescriptionID])
 }
 
+model LabTestCategory {
+  CategoryID   Int       @id @default(autoincrement())
+  CategoryName String    @db.VarChar(250)
+  Description  String?   @db.VarChar(500)
+  Created      DateTime  @default(now())
+  Modified     DateTime  @updatedAt
+  LabTests     LabTest[]
+}
+
+model LabTest {
+  TestID     Int             @id @default(autoincrement())
+  TestName   String          @db.VarChar(250)
+  TestCode   String?         @unique @db.VarChar(50)
+  CategoryID Int
+  Price      Decimal         @db.Decimal(10, 2)
+  IsActive   Boolean         @default(true)
+  Created    DateTime        @default(now())
+  Modified   DateTime        @updatedAt
+  OrderItems LabOrderItem[]
+  Category   LabTestCategory @relation(fields: [CategoryID], references: [CategoryID])
+}
+
+model LabOrder {
+  OrderID     Int            @id @default(autoincrement())
+  OPDID       Int
+  PatientID   Int
+  DoctorID    Int
+  OrderDate   DateTime       @default(now())
+  Status      LabOrderStatus @default(PENDING)
+  TotalAmount Decimal        @db.Decimal(10, 2)
+  Notes       String?
+  Created     DateTime       @default(now())
+  Modified    DateTime       @updatedAt
+  OPD         OPD            @relation(fields: [OPDID], references: [OPDID])
+  Items       LabOrderItem[]
+}
+
+model LabOrderItem {
+  OrderItemID Int            @id @default(autoincrement())
+  OrderID     Int
+  TestID      Int
+  Price       Decimal        @db.Decimal(10, 2)
+  ResultValue String?
+  ResultNotes String?
+  Status      LabOrderStatus @default(PENDING)
+  Created     DateTime       @default(now())
+  Modified    DateTime       @updatedAt
+  Order       LabOrder       @relation(fields: [OrderID], references: [OrderID])
+  Test        LabTest        @relation(fields: [TestID], references: [TestID])
+}
+
 enum Role {
   ADMIN
   DOCTOR
   RECEPTIONIST
   PATIENT
-  PHARMACIST
-  LAB_TECHNICIAN
 }
 
 enum OPDStatus {
@@ -288,61 +342,42 @@ enum OPDStatus {
   CANCELLED
 }
 
-model LabTestCategory {
-  CategoryID   Int        @id @default(autoincrement())
-  CategoryName String     @db.VarChar(250)
-  Description  String?    @db.VarChar(500)
-  Created      DateTime   @default(now())
-  Modified     DateTime   @updatedAt
-  LabTests     LabTest[]
-}
-
-model LabTest {
-  TestID       Int               @id @default(autoincrement())
-  TestName     String            @db.VarChar(250)
-  TestCode     String?           @db.VarChar(50) @unique
-  CategoryID   Int
-  Price        Decimal           @db.Decimal(10, 2)
-  IsActive     Boolean           @default(true)
-  Created      DateTime          @default(now())
-  Modified     DateTime          @updatedAt
-  Category     LabTestCategory   @relation(fields: [CategoryID], references: [CategoryID])
-  OrderItems   LabOrderItem[]
-}
-
-model LabOrder {
-  OrderID      Int               @id @default(autoincrement())
-  OPDID        Int
-  PatientID    Int
-  DoctorID     Int
-  OrderDate    DateTime          @default(now())
-  Status       LabOrderStatus    @default(PENDING)
-  TotalAmount  Decimal           @db.Decimal(10, 2)
-  Notes        String?
-  Created      DateTime          @default(now())
-  Modified     DateTime          @updatedAt
-  Items        LabOrderItem[]
-  OPD          OPD               @relation(fields: [OPDID], references: [OPDID])
-}
-
-model LabOrderItem {
-  OrderItemID  Int       @id @default(autoincrement())
-  OrderID      Int
-  TestID       Int
-  Price        Decimal   @db.Decimal(10, 2)
-  ResultValue  String?
-  ResultNotes  String?
-  Status       LabOrderStatus @default(PENDING)
-  Created      DateTime  @default(now())
-  Modified     DateTime  @updatedAt
-  Order        LabOrder  @relation(fields: [OrderID], references: [OrderID])
-  Test         LabTest   @relation(fields: [TestID], references: [TestID])
-}
-
 enum LabOrderStatus {
   PENDING
   SAMPLE_COLLECTED
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+model AuditLog {
+  LogID     Int      @id @default(autoincrement())
+  Action    String   @db.VarChar(100)
+  Module    String   @db.VarChar(100)
+  Details   String?  @db.Text
+  UserID    Int
+  Created   DateTime @default(now())
+  User      User     @relation(fields: [UserID], references: [UserID])
+}
+
+model PrescriptionTemplate {
+  TemplateID   Int                            @id @default(autoincrement())
+  TemplateName String                         @db.VarChar(250)
+  Description  String?                        @db.VarChar(500)
+  DoctorID     Int
+  Created      DateTime                       @default(now())
+  Modified     DateTime                       @updatedAt
+  Medicines    PrescriptionTemplateMedicine[]
+  Doctor       Doctor                         @relation(fields: [DoctorID], references: [DoctorID])
+}
+
+model PrescriptionTemplateMedicine {
+  ID           Int                  @id @default(autoincrement())
+  TemplateID   Int
+  MedicineName String               @db.VarChar(250)
+  Dosage       String               @db.VarChar(100)
+  Frequency    String               @db.VarChar(100)
+  Duration     String               @db.VarChar(100)
+  Instructions String?              @db.VarChar(250)
+  Template     PrescriptionTemplate @relation(fields: [TemplateID], references: [TemplateID])
 }

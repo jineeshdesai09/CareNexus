@@ -15,11 +15,46 @@ export default function BookAppointmentPage() {
   const [doctors, setDoctors] = useState<any[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string>("");
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  // Helper to generate time slots
+  const generateTimeSlots = () => {
+    if (!selectedDoctor || !selectedDate) return [];
+    
+    const day = selectedDate.getDay();
+    const availability = selectedDoctor.Availabilities.find((a: any) => a.DayOfWeek === day);
+    if (!availability) return [];
+
+    const slots = [];
+    const [fromTime, fromPeriod] = availability.FromTime.split(" ");
+    const [toTime, toPeriod] = availability.ToTime.split(" ");
+    
+    let [fromH, fromM] = fromTime.split(":").map(Number);
+    let [toH, toM] = toTime.split(":").map(Number);
+
+    if (fromPeriod === "PM" && fromH < 12) fromH += 12;
+    if (fromPeriod === "AM" && fromH === 12) fromH = 0;
+    if (toPeriod === "PM" && toH < 12) toH += 12;
+    if (toPeriod === "AM" && toH === 12) toH = 0;
+
+    const startMinutes = fromH * 60 + fromM;
+    const endMinutes = toH * 60 + toM;
+    const interval = 20; // 20 min per patient
+
+    for (let time = startMinutes; time < endMinutes; time += interval) {
+        let h = Math.floor(time / 60);
+        let m = time % 60;
+        let p = h >= 12 ? "PM" : "AM";
+        let displayH = h % 12 || 12;
+        slots.push(`${String(displayH).padStart(2, '0')}:${String(m).padStart(2, '0')} ${p}`);
+    }
+    return slots;
+  };
 
   useEffect(() => {
     getAvailableSpecializations()
@@ -59,7 +94,7 @@ export default function BookAppointmentPage() {
   };
 
   const handleBook = async () => {
-    if (!selectedDoctor || !selectedDate) return;
+    if (!selectedDoctor || !selectedDate || !selectedTime) return;
     setBooking(true);
     setError("");
 
@@ -70,7 +105,7 @@ export default function BookAppointmentPage() {
       const day = String(selectedDate.getDate()).padStart(2, '0');
       const dateString = `${year}-${month}-${day}`;
 
-      await bookAppointment(selectedDoctor.DoctorID, dateString, reason);
+      await bookAppointment(selectedDoctor.DoctorID, dateString, reason, selectedTime);
       setSuccess(true);
     } catch (err: any) {
       setError(err.message || "Failed to book appointment. Please try again.");
@@ -259,12 +294,41 @@ export default function BookAppointmentPage() {
               <div className="calendar-container border border-slate-200 rounded-2xl p-4 inline-block bg-slate-50">
                 <DatePicker
                   selected={selectedDate}
-                  onChange={(date: Date | null) => setSelectedDate(date)}
+                  onChange={(date: Date | null) => {
+                    setSelectedDate(date);
+                    setSelectedTime(""); // Reset time on date change
+                  }}
                   filterDate={isDayAvailable}
                   inline
                   minDate={(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d; })()}
                 />
               </div>
+
+              {/* Time Slots */}
+              {selectedDate && (
+                <div className="mt-8 pt-8 border-t border-slate-100">
+                  <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-wider">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    Available Slots
+                  </h3>
+                  <div className="grid grid-cols-3 gap-2">
+                    {generateTimeSlots().map(time => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() => setSelectedTime(time)}
+                        className={`py-2 px-3 text-xs font-bold rounded-xl border-2 transition-all ${
+                          selectedTime === time 
+                          ? "bg-blue-600 border-blue-600 text-white shadow-md scale-105" 
+                          : "bg-white border-slate-100 text-slate-600 hover:border-blue-200"
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">
@@ -294,6 +358,10 @@ export default function BookAppointmentPage() {
                     <span>Date:</span> 
                     <span className="font-bold">{selectedDate ? selectedDate.toLocaleDateString() : 'Not selected'}</span>
                   </p>
+                  <p className="flex justify-between">
+                    <span>Time:</span> 
+                    <span className="font-bold">{selectedTime || 'Not selected'}</span>
+                  </p>
                   <p className="flex justify-between pt-2 border-t border-blue-200 mt-2">
                     <span>Consultation Fee:</span> 
                     <span className="font-bold">₹{selectedDoctor.ConsultationFee.toString()}</span>
@@ -303,11 +371,11 @@ export default function BookAppointmentPage() {
 
               <button
                 onClick={handleBook}
-                disabled={!selectedDate || booking}
+                disabled={!selectedDate || !selectedTime || booking}
                 className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-                  !selectedDate || booking
+                  !selectedDate || !selectedTime || booking
                     ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg"
+                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-[0.98]"
                 }`}
               >
                 {booking ? "Confirming..." : "Confirm Appointment"}
