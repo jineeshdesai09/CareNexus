@@ -14,13 +14,13 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-zinc-950 dark:to-zinc-900">
       {/* Header */}
       <header className="bg-white dark:bg-zinc-950 shadow-sm border-b border-transparent dark:border-zinc-800 transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-xl flex items-center justify-center">
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
             <span className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
-              TechCare
+              Care Nexus
             </span>
           </div>
 
@@ -31,21 +31,21 @@ export default function RegisterPage() {
                 className="flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
             >
                 <ArrowLeft className="w-5 h-5" />
-                <span className="font-medium">Back to Login</span>
+                <span className="font-medium hidden sm:inline">Back to Login</span>
             </Link>
           </div>
         </div>
       </header>
 
       {/* Register Form Container */}
-      <div className="flex items-center justify-center px-6 py-16">
+      <div className="flex items-center justify-center px-4 sm:px-6 py-8 sm:py-16">
         <div className="w-full max-w-md">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl dark:shadow-none p-8 dark:border dark:border-zinc-800">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl dark:shadow-none p-6 sm:p-8 dark:border dark:border-zinc-800">
             <div className="flex items-center gap-3 mb-8">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-500 border border-transparent dark:border-blue-800/50">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-500 border border-transparent dark:border-blue-800/50 shrink-0">
                 <UserPlus className="w-6 h-6" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-50">Create Account</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-zinc-50">Create Account</h1>
             </div>
 
             <form action={register} className="space-y-6">
@@ -106,7 +106,7 @@ export default function RegisterPage() {
               </div>
 
               {/* Mobile and Gender Row */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-900 dark:text-zinc-300 mb-2">
                     Mobile No

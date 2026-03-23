@@ -35,7 +35,7 @@ export default async function PatientLayout({
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 dark:from-teal-400 dark:to-teal-600 bg-clip-text text-transparent">
-              Patient Portal
+              Care Nexus Patient
             </span>
           </Link>
         </div>
@@ -77,13 +77,27 @@ export default async function PatientLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0 relative">
         <Header userName={user?.Name} userRole={user?.Role} />
         <main className="flex-1 overflow-y-auto">
           <div className="max-w-7xl mx-auto p-4 md:p-8">
             {children}
           </div>
         </main>
+
+        {/* Mobile Bottom Navigation */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800 flex justify-around items-center p-2 z-50 shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] transition-colors">
+          {menuItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex flex-col items-center p-2 text-slate-500 dark:text-zinc-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+            >
+              <item.icon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-bold">{item.label.replace("My ", "")}</span>
+            </Link>
+          ))}
+        </nav>
       </div>
     </div>
   );

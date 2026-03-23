@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import ThemeToggle from "@/app/components/ui/ThemeToggle";
-
 import {
   Heart,
   Users,
@@ -17,7 +16,6 @@ import {
   Stethoscope,
   DollarSign,
 } from "lucide-react";
-
 type ColorType = "blue" | "green" | "purple" | "orange" | "teal" | "indigo";
 
 interface StatItem {
@@ -105,11 +103,11 @@ export default function OPDLandingPage() {
       <header className="bg-white dark:bg-zinc-950 shadow-sm border-b border-transparent dark:border-zinc-800 transition-colors">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 dark:bg-blue-500 rounded-xl flex items-center justify-center">
-              <Heart className="w-6 h-6 text-white" fill="white" />
+            <div className="bg-blue-600 dark:bg-blue-500 p-2.5 rounded-xl text-white shadow-lg shadow-blue-600/20 dark:shadow-none">
+              <Heart className="w-6 h-6" fill="currentColor" />
             </div>
-            <span className="text-xl font-semibold text-gray-900 dark:text-zinc-50">
-              TechCare
+            <span className="text-2xl font-bold tracking-tight text-gray-900 dark:text-zinc-50">
+              Care Nexus
             </span>
           </div>
 
@@ -131,7 +129,7 @@ export default function OPDLandingPage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
-              TechCare Hospital Management Platform
+              Care Nexus Hospital Management Platform
             </h1>
             <p className="text-lg text-gray-600 dark:text-zinc-400 mb-8 leading-relaxed">
               Smart, integrated solutions for modern hospitals. Streamline
@@ -215,11 +213,11 @@ export default function OPDLandingPage() {
           <div className="grid md:grid-cols-3 gap-12">
             {/* Company Info */}
             <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                  <Heart className="w-6 h-6 text-white" fill="white" />
+              <div className="flex items-center gap-3 mb-6">
+                <div className="bg-blue-600 dark:bg-blue-500 p-2 rounded-lg text-white">
+                  <Heart className="w-5 h-5" fill="currentColor" />
                 </div>
-                <span className="text-xl font-semibold">TechCare</span>
+                <span className="text-xl font-semibold">Care Nexus</span>
               </div>
               <p className="text-slate-400 leading-relaxed">
                 Leading hospital management platform trusted by healthcare
@@ -233,11 +231,11 @@ export default function OPDLandingPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-slate-400">
                   <Phone className="w-5 h-5" />
-                  <span>+1 (555) 123-4567</span>
+                  <span>91 88495 68502</span>
                 </div>
                 <div className="flex items-center gap-3 text-slate-400">
-                  <Mail className="w-5 h-5" />
-                  <span>support@techcare.health</span>
+                  <Mail className="w-5 h-5 text-blue-500" />
+                  <span>carenexus8@gmail.com</span>
                 </div>
               </div>
             </div>
@@ -247,20 +245,14 @@ export default function OPDLandingPage() {
               <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
               <ul className="space-y-2">
                 <li>
-                  <a
-                    href="#"
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
+                  <Link href="/about" className="text-slate-400 hover:text-white transition-colors">
                     About Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a
-                    href="#"
-                    className="text-slate-400 hover:text-white transition-colors"
-                  >
-                    Features
-                  </a>
+                  <Link href="/about#contact" className="text-slate-400 hover:text-white transition-colors">
+                    Contact Validation
+                  </Link>
                 </li>
                 <li>
                   <a
@@ -282,8 +274,10 @@ export default function OPDLandingPage() {
             </div>
           </div>
 
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-400">
-            <p>© 2024 TechCare. All rights reserved.</p>
+          <div className="border-t border-gray-800 dark:border-zinc-800 mt-16 pt-8 flex flex-col md:flex-row items-center justify-between text-gray-400 dark:text-zinc-500 text-sm">
+            <p>© 2024 Care Nexus. All rights reserved.</p>
+            <div className="flex gap-6 mt-4 md:mt-0">
+            </div>
           </div>
         </div>
       </footer>

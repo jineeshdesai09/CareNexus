@@ -16,13 +16,8 @@ export default async function ReceptionLayout({
     redirect("/login");
   }
 
-  return (
-    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-zinc-950">
-      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800">
-        <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center h-16">
-          <h2 className="text-xl font-bold text-teal-700 dark:text-teal-500 tracking-tight">Reception</h2>
-        </div>
-
+  const sidebarNav = (
+    <>
         <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
           <Link href="/reception/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
             <LayoutDashboard size={18} />
@@ -58,7 +53,7 @@ export default async function ReceptionLayout({
           </Link>
         </nav>
 
-        <div className="p-4 border-t border-slate-200 dark:border-zinc-800">
+        <div className="p-4 border-t border-slate-200 dark:border-zinc-800 mt-auto">
           <form action={logout}>
             <button
               type="submit"
@@ -68,11 +63,21 @@ export default async function ReceptionLayout({
             </button>
           </form>
         </div>
+    </>
+  );
+
+  return (
+    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-zinc-950">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800">
+        <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center h-16">
+          <h2 className="text-xl font-bold text-teal-700 dark:text-teal-500 tracking-tight">Care Nexus Reception</h2>
+        </div>
+        {sidebarNav}
       </aside>
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Header userName={user?.Name} userRole={user?.Role} />
+        <Header userName={user?.Name} userRole={user?.Role} mobileMenu={sidebarNav} />
         <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             {children}
