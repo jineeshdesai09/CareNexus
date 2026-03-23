@@ -22,8 +22,8 @@ export default async function PatientProfilePage() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto space-y-8">
-            <h1 className="text-3xl font-bold text-slate-900">My Profile</h1>
+        <div className="max-w-4xl mx-auto space-y-8 animate-in mt-2 fade-in slide-in-from-bottom-4 duration-700">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-zinc-50">My Profile</h1>
             <ProfileEditForm patient={serializedPatient as any} />
         </div>
     );

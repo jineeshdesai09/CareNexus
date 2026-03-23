@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/app/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Users, CalendarClock, Activity } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const runtime = "nodejs";
 
@@ -20,7 +21,7 @@ export default async function DoctorDashboard() {
 
   if (!doctor) {
     return (
-      <div className="p-4 bg-red-50 text-red-600 rounded">
+      <div className="p-4 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl border border-rose-100 dark:border-rose-800">
         Error: No Doctor profile linked to your user account. Please contact admin.
       </div>
     );
@@ -94,14 +95,13 @@ export default async function DoctorDashboard() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto p-4 flex flex-col gap-8">
-      <div className="flex justify-between items-center border-b border-gray-200 pb-4">
-
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 pt-2">
+      <div className="flex justify-between items-center border-b border-slate-200 dark:border-zinc-800 pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="text-3xl font-extrabold text-slate-900 dark:text-zinc-50 tracking-tight">
             Doctor Dashboard
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-slate-500 dark:text-zinc-400 mt-1 font-medium text-sm">
             Welcome, Dr. {doctor.FirstName} {doctor.LastName}
           </p>
         </div>
@@ -109,86 +109,127 @@ export default async function DoctorDashboard() {
 
       {/* Analytics Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shrink-0">
-                  <Activity className="w-6 h-6" />
-              </div>
-              <div>
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Today's Queue</p>
-                  <p className="text-2xl font-bold text-gray-900">{opds.length}</p>
-              </div>
-          </div>
+          <Card className="border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-sm bg-white dark:bg-zinc-900 hover:ring-teal-500/50 transition-all group">
+              <CardContent className="p-6 !pt-6 flex flex-row items-center gap-5">
+                  <div className="w-14 h-14 bg-teal-50 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl flex items-center justify-center shrink-0 border border-teal-100 dark:border-teal-800/50 shadow-sm transition-transform group-hover:scale-105">
+                      <Activity className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 justify-center mt-1">
+                      <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest leading-none">Today's Queue</p>
+                      <p className="text-3xl font-black text-slate-900 dark:text-zinc-50 leading-none">{opds.length}</p>
+                  </div>
+              </CardContent>
+          </Card>
           
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center shrink-0">
-                  <Users className="w-6 h-6" />
-              </div>
-              <div>
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Treated This Month</p>
-                  <p className="text-2xl font-bold text-gray-900">{monthlyConsultations}</p>
-              </div>
-          </div>
+          <Card className="border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-sm bg-white dark:bg-zinc-900 hover:ring-blue-500/50 transition-all group">
+              <CardContent className="p-6 !pt-6 flex flex-row items-center gap-5">
+                  <div className="w-14 h-14 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800/50 shadow-sm transition-transform group-hover:scale-105">
+                      <Users className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 justify-center mt-1">
+                      <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest leading-none">Treated This Month</p>
+                      <p className="text-3xl font-black text-slate-900 dark:text-zinc-50 leading-none">{monthlyConsultations}</p>
+                  </div>
+              </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-              <div className="w-12 h-12 bg-green-50 text-green-600 rounded-full flex items-center justify-center shrink-0">
-                  <CalendarClock className="w-6 h-6" />
-              </div>
-              <div>
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Follow-ups (7d)</p>
-                  <p className="text-2xl font-bold text-gray-900">{upcomingFollowUps.length}</p>
-              </div>
-          </div>
+          <Card className="border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-sm bg-white dark:bg-zinc-900 hover:ring-emerald-500/50 transition-all group">
+              <CardContent className="p-6 !pt-6 flex flex-row items-center gap-5">
+                  <div className="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center shrink-0 border border-emerald-100 dark:border-emerald-800/50 shadow-sm transition-transform group-hover:scale-105">
+                      <CalendarClock className="w-6 h-6" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 justify-center mt-1">
+                      <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest leading-none">Follow-ups (7D)</p>
+                      <p className="text-3xl font-black text-slate-900 dark:text-zinc-50 leading-none">{upcomingFollowUps.length}</p>
+                  </div>
+              </CardContent>
+          </Card>
       </div>
 
-      <div className="space-y-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-5 border-b bg-gray-50">
-            <h2 className="text-lg font-semibold text-gray-800">Today's Appointments</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <Card className="border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-md bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-zinc-950/50">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-zinc-100">Today's Appointments</h2>
           </div>
-          {/* ... existing table code ... */}
-        </div>
+          <div className="p-6">
+             {opds.length === 0 ? (
+                <div className="text-center py-8">
+                    <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">No pending appointments for today.</p>
+                </div>
+             ) : (
+                <div className="space-y-4">
+                    {opds.slice(0, 5).map(opd => (
+                        <div key={opd.OPDID} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950/20">
+                            <div>
+                                <p className="font-bold text-slate-900 dark:text-zinc-100">{opd.Patient.PatientName}</p>
+                                <p className="text-xs font-medium text-slate-500 dark:text-zinc-500 mt-1">TK: {opd.TokenNo} • {opd.Patient.Age}Y • {opd.Patient.Gender.charAt(0)}</p>
+                            </div>
+                            <Link href={`/doctor/opd/${opd.OPDID}`} className="px-4 py-2 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400 rounded-lg text-xs font-bold shadow-sm border border-teal-100 dark:border-teal-800/50 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors">
+                                Consult
+                            </Link>
+                        </div>
+                    ))}
+                    {opds.length > 5 && (
+                        <Link href="/doctor/dashboard" className="block text-center text-sm font-bold text-teal-600 dark:text-teal-400 pt-2 hover:underline">
+                            View all {opds.length} appointments
+                        </Link>
+                    )}
+                </div>
+             )}
+          </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="p-5 border-b bg-gray-50 flex items-center gap-2">
-            <CalendarClock className="w-5 h-5 text-gray-600" />
-            <h2 className="text-lg font-semibold text-gray-800">Upcoming Follow-ups (Next 7 Days)</h2>
+        <Card className="border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-md bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="p-5 border-b border-slate-100 dark:border-zinc-800/50 bg-slate-50/50 dark:bg-zinc-950/50 flex items-center gap-2">
+            <CalendarClock className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+            <h2 className="text-lg font-bold text-slate-800 dark:text-zinc-100">Upcoming Follow-ups (Next 7 Days)</h2>
           </div>
 
-          {upcomingFollowUps.length === 0 ? (
-            <div className="p-8 text-center text-gray-500 italic">
-              No follow-ups scheduled for the next 7 days.
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Follow-up Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Patient ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Contact</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {upcomingFollowUps.map((opd) => (
-                  <tr key={opd.OPDID} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
-                      {opd.FollowUpDate?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {opd.Patient.PatientNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {opd.Patient.PatientName}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-600">
-                      {opd.Patient.MobileNo}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+          <div className="p-0">
+              {upcomingFollowUps.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center">
+                  <div className="w-12 h-12 bg-slate-50 dark:bg-zinc-800 rounded-full flex items-center justify-center text-slate-300 dark:text-zinc-600 mb-4">
+                      <CalendarClock className="w-6 h-6" />
+                  </div>
+                  <span className="text-sm font-medium text-slate-500 dark:text-zinc-400">
+                      No follow-ups scheduled for the next 7 days.
+                  </span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                    <thead className="bg-slate-50 dark:bg-zinc-950/50 border-b border-slate-100 dark:border-zinc-800 text-[10px] font-bold text-slate-500 dark:text-zinc-500 uppercase tracking-widest">
+                        <tr>
+                        <th className="px-6 py-4 text-left">Follow-up Date</th>
+                        <th className="px-6 py-4 text-left">Patient Details</th>
+                        <th className="px-6 py-4 text-right">Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/50">
+                        {upcomingFollowUps.map((opd) => (
+                        <tr key={opd.OPDID} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30 transition-colors">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-teal-600 dark:text-teal-400">
+                            {opd.FollowUpDate?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 block">
+                                {opd.Patient.PatientName}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-500 tracking-wider">
+                                #{opd.Patient.PatientNo}
+                            </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-slate-600 dark:text-zinc-400">
+                            {opd.Patient.MobileNo || "—"}
+                            </td>
+                        </tr>
+                        ))}
+                    </tbody>
+                    </table>
+                </div>
+              )}
+          </div>
+        </Card>
       </div>
     </div>
   );

@@ -84,7 +84,7 @@ export default function PrintReceiptButton({ data }: PrintReceiptButtonProps) {
             ]);
         });
 
-        const result = autoTable(doc, {
+        autoTable(doc, {
             startY: 75,
             head: [['Service Description', 'Rate', 'Qty', 'Amount']],
             body: tableBody,
@@ -96,7 +96,7 @@ export default function PrintReceiptButton({ data }: PrintReceiptButtonProps) {
             margin: { left: 15, right: 15 }
         });
 
-        let finalY = (result as any).lastAutoTable.finalY + 10;
+        let finalY = (doc as any).lastAutoTable.finalY + 10;
 
         // 4. Totals
         doc.setFont("helvetica", "bold");

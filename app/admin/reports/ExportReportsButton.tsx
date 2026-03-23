@@ -47,7 +47,7 @@ export default function ExportReportsButton({ data }: ExportReportsButtonProps) 
   return (
     <button
       onClick={downloadCSV}
-      className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-all active:scale-95 text-sm"
+      className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 transition-all active:scale-95 text-sm"
     >
       <Download className="w-4 h-4" />
       Export CSV

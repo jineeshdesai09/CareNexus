@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import { getCurrentUser } from "../lib/auth";
 import { Role } from "@prisma/client";
 import { recordAuditLog } from "@/app/lib/audit";
+import { sendApprovalEmail, sendPasswordResetEmail } from "@/app/lib/mail";
 
 export async function updateUserStatus(userId: number, status: "APPROVED" | "REJECTED") {
   try {
@@ -15,6 +16,10 @@ export async function updateUserStatus(userId: number, status: "APPROVED" | "REJ
       where: { UserID: userId },
       data: { Status: status },
     });
+
+    if (status === "APPROVED") {
+      await sendApprovalEmail(user.Email, user.Name, user.Role);
+    }
 
     if (requester) {
       await recordAuditLog({
@@ -59,6 +64,9 @@ export async function createStaff(formData: FormData) {
         Status: "APPROVED",
       },
     });
+
+    // Send email with credentials
+    await sendApprovalEmail(email, name, role, password);
 
     await recordAuditLog({
       Action: "CREATE",
@@ -108,6 +116,9 @@ export async function updateUser(userId: number, formData: FormData) {
     const role = String(formData.get("role")) as Role;
     const status = String(formData.get("status"));
 
+    // Fetch existing user to check if status changed to APPROVED
+    const existingUser = await prisma.user.findUnique({ where: { UserID: userId } });
+
     const user = await prisma.user.update({
       where: { UserID: userId },
       data: {
@@ -117,6 +128,11 @@ export async function updateUser(userId: number, formData: FormData) {
         Status: status,
       },
     });
+
+    // If status was changed to APPROVED, send email
+    if (existingUser?.Status !== "APPROVED" && status === "APPROVED") {
+      await sendApprovalEmail(user.Email, user.Name, user.Role);
+    }
 
     if (requester) {
       await recordAuditLog({
@@ -144,6 +160,9 @@ export async function resetPassword(userId: number, formData: FormData) {
       where: { UserID: userId },
       data: { Password: hashedPassword },
     });
+
+    // Send password reset email
+    await sendPasswordResetEmail(user.Email, user.Name, password);
 
     if (requester) {
       await recordAuditLog({

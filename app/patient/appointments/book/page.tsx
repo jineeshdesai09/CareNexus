@@ -131,24 +131,24 @@ export default function BookAppointmentPage() {
   if (success) {
     return (
       <div className="max-w-2xl mx-auto mt-12 animate-in fade-in slide-in-from-bottom-4">
-        <div className="bg-white p-12 rounded-3xl shadow-lg border border-slate-100 text-center">
-          <div className="w-24 h-24 bg-green-100 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white dark:bg-zinc-900 p-12 rounded-3xl shadow-lg dark:shadow-none border border-slate-100 dark:border-zinc-800 text-center">
+          <div className="w-24 h-24 bg-green-100 dark:bg-green-900/20 text-green-500 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-200 dark:border-green-800/50">
             <CheckCircle2 className="w-12 h-12" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-4">Appointment Confirmed!</h2>
-          <p className="text-slate-500 mb-8 max-w-md mx-auto">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-zinc-50 mb-4">Appointment Confirmed!</h2>
+          <p className="text-slate-500 dark:text-zinc-400 mb-8 max-w-md mx-auto">
             Your appointment with Dr. {selectedDoctor?.FirstName} {selectedDoctor?.LastName} on {selectedDate?.toLocaleDateString()} has been successfully securely booked.
           </p>
           <div className="flex gap-4 justify-center">
             <button
               onClick={() => router.push("/patient/dashboard")}
-              className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 bg-teal-600 dark:bg-teal-500 text-white font-bold rounded-xl hover:bg-teal-700 dark:hover:bg-teal-400 transition-colors"
             >
               Go to Dashboard
             </button>
             <button
               onClick={() => router.push("/patient/appointments")}
-              className="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              className="px-6 py-3 bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-700 transition-colors border border-transparent dark:border-zinc-700"
             >
               View My Appointments
             </button>
@@ -161,12 +161,12 @@ export default function BookAppointmentPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Book an Appointment</h1>
-        <p className="text-slate-500">Schedule a visit with our specialists</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-zinc-50">Book an Appointment</h1>
+        <p className="text-slate-500 dark:text-zinc-400">Schedule a visit with our specialists</p>
       </div>
 
       {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-xl flex items-center gap-3 border border-red-100">
+        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3 border border-red-100 dark:border-red-800/50">
           <AlertCircle className="w-5 h-5" />
           <p className="font-medium">{error}</p>
         </div>
@@ -177,23 +177,23 @@ export default function BookAppointmentPage() {
           <div 
             key={s} 
             className={`flex-1 h-2 rounded-full transition-colors duration-500 ${
-              s <= step ? "bg-blue-600" : "bg-slate-200"
+              s <= step ? "bg-teal-600 dark:bg-teal-500" : "bg-slate-200 dark:bg-zinc-800"
             }`} 
           />
         ))}
       </div>
 
       {step === 1 && (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <Stethoscope className="text-blue-500" />
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 mb-6 flex items-center gap-2">
+            <Stethoscope className="text-teal-500 dark:text-teal-400" />
             1. Select Speciality
           </h2>
           
           {loading ? (
-            <div className="text-center py-12 text-slate-400">Loading specialities...</div>
+            <div className="text-center py-12 text-slate-400 dark:text-zinc-500">Loading specialities...</div>
           ) : specializations.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl">
+            <div className="text-center py-12 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
               No doctors are currently available for booking.
             </div>
           ) : (
@@ -202,9 +202,9 @@ export default function BookAppointmentPage() {
                 <button
                   key={spec}
                   onClick={() => handleSpecializationSelect(spec)}
-                  className="p-6 text-left border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50 transition-all group"
+                  className="p-6 text-left border-2 border-slate-100 dark:border-zinc-800 rounded-2xl hover:border-teal-500 dark:hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-all group bg-white dark:bg-zinc-950"
                 >
-                  <p className="font-bold text-slate-900 group-hover:text-blue-700">{spec}</p>
+                  <p className="font-bold text-slate-900 dark:text-zinc-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">{spec}</p>
                 </button>
               ))}
             </div>
@@ -213,28 +213,28 @@ export default function BookAppointmentPage() {
       )}
 
       {step === 2 && (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 animate-in slide-in-from-right-8">
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800 animate-in slide-in-from-right-8">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <span className="text-blue-500 bg-blue-50 p-2 rounded-xl"><Stethoscope className="w-5 h-5" /></span>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+              <span className="text-teal-500 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 p-2 rounded-xl border border-teal-100 dark:border-teal-800/50"><Stethoscope className="w-5 h-5" /></span>
               2. Select Doctor
             </h2>
             <button 
               onClick={() => setStep(1)}
-              className="text-sm font-bold text-slate-500 hover:text-slate-900"
+              className="text-sm font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors"
             >
               Back to Specialities
             </button>
           </div>
           
-          <p className="text-sm text-slate-500 mb-6 font-bold uppercase tracking-wider">
-            Showing specificists for <span className="text-blue-600">{selectedSpecialization}</span>
+          <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 font-bold uppercase tracking-wider">
+            Showing specialists for <span className="text-teal-600 dark:text-teal-400">{selectedSpecialization}</span>
           </p>
 
           {loading ? (
-            <div className="text-center py-12 text-slate-400">Loading doctors...</div>
+            <div className="text-center py-12 text-slate-400 dark:text-zinc-500">Loading doctors...</div>
           ) : doctors.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 bg-slate-50 rounded-2xl">
+            <div className="text-center py-12 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
               No doctors found for this speciality.
             </div>
           ) : (
@@ -242,14 +242,14 @@ export default function BookAppointmentPage() {
               {doctors.map((doc) => (
                 <div
                   key={doc.DoctorID}
-                  className="p-6 border-2 border-slate-100 rounded-2xl hover:border-blue-200 transition-all flex flex-col justify-between"
+                  className="p-6 border-2 border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-2xl hover:border-teal-200 dark:hover:border-teal-800 transition-all flex flex-col justify-between"
                 >
                   <div className="mb-4">
-                    <h3 className="font-bold text-lg text-slate-900">Dr. {doc.FirstName} {doc.LastName}</h3>
-                    <p className="text-sm text-slate-500 mb-2">{doc.ExperienceYears} Years Experience</p>
+                    <h3 className="font-bold text-lg text-slate-900 dark:text-zinc-100">Dr. {doc.FirstName} {doc.LastName}</h3>
+                    <p className="text-sm text-slate-500 dark:text-zinc-400 mb-2">{doc.ExperienceYears} Years Experience</p>
                     <div className="flex gap-2 flex-wrap">
                       {doc.Availabilities.map((a: any) => (
-                        <span key={a.DayOfWeek} className="text-xs font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded-md">
+                        <span key={a.DayOfWeek} className="text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2 py-1 rounded-md border border-slate-200 dark:border-zinc-700">
                           {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][a.DayOfWeek]}
                         </span>
                       ))}
@@ -257,7 +257,7 @@ export default function BookAppointmentPage() {
                   </div>
                   <button
                     onClick={() => handleDoctorSelect(doc)}
-                    className="w-full py-2 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-600 hover:text-white transition-colors mt-4"
+                    className="w-full py-2 bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400 font-bold rounded-xl hover:bg-teal-600 hover:text-white dark:hover:bg-teal-600 dark:hover:text-white border border-teal-100 dark:border-teal-800/50 transition-colors mt-4"
                   >
                     Select Doctor
                   </button>
@@ -269,15 +269,15 @@ export default function BookAppointmentPage() {
       )}
 
       {step === 3 && selectedDoctor && (
-        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 animate-in slide-in-from-right-8">
-          <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <span className="text-blue-500 bg-blue-50 p-2 rounded-xl"><CalendarIcon className="w-5 h-5" /></span>
+        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800 animate-in slide-in-from-right-8">
+          <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 dark:border-zinc-800">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
+              <span className="text-teal-500 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 p-2 rounded-xl border border-teal-100 dark:border-teal-800/50"><CalendarIcon className="w-5 h-5" /></span>
               3. Choose Date & Details
             </h2>
             <button 
               onClick={() => setStep(2)}
-              className="text-sm font-bold text-slate-500 hover:text-slate-900"
+              className="text-sm font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors"
             >
               Back to Doctors
             </button>
@@ -285,13 +285,13 @@ export default function BookAppointmentPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             <div>
-              <h3 className="font-bold text-slate-800 mb-4">Select a Date</h3>
-              <p className="text-sm text-slate-500 mb-4">
+              <h3 className="font-bold text-slate-800 dark:text-zinc-200 mb-4">Select a Date</h3>
+              <p className="text-sm text-slate-500 dark:text-zinc-400 mb-4">
                 Dr. {selectedDoctor.LastName} is available on:{" "}
                 {selectedDoctor.Availabilities.map((a: any) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][a.DayOfWeek]).join(", ")}
               </p>
               
-              <div className="calendar-container border border-slate-200 rounded-2xl p-4 inline-block bg-slate-50">
+              <div className="calendar-container border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 inline-block bg-slate-50 dark:bg-zinc-950">
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date: Date | null) => {
@@ -306,9 +306,9 @@ export default function BookAppointmentPage() {
 
               {/* Time Slots */}
               {selectedDate && (
-                <div className="mt-8 pt-8 border-t border-slate-100">
-                  <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2 uppercase text-xs tracking-wider">
-                    <Clock className="w-4 h-4 text-blue-500" />
+                <div className="mt-8 pt-8 border-t border-slate-100 dark:border-zinc-800">
+                  <h3 className="font-bold text-slate-800 dark:text-zinc-200 mb-4 flex items-center gap-2 uppercase text-xs tracking-wider">
+                    <Clock className="w-4 h-4 text-teal-500 dark:text-teal-400" />
                     Available Slots
                   </h3>
                   <div className="grid grid-cols-3 gap-2">
@@ -319,8 +319,8 @@ export default function BookAppointmentPage() {
                         onClick={() => setSelectedTime(time)}
                         className={`py-2 px-3 text-xs font-bold rounded-xl border-2 transition-all ${
                           selectedTime === time 
-                          ? "bg-blue-600 border-blue-600 text-white shadow-md scale-105" 
-                          : "bg-white border-slate-100 text-slate-600 hover:border-blue-200"
+                          ? "bg-teal-600 dark:bg-teal-500 border-teal-600 dark:border-teal-500 text-white shadow-md scale-105" 
+                          : "bg-white dark:bg-zinc-950 border-slate-100 dark:border-zinc-800 text-slate-600 dark:text-zinc-300 hover:border-teal-200 dark:hover:border-teal-800/50"
                         }`}
                       >
                         {time}
@@ -333,19 +333,19 @@ export default function BookAppointmentPage() {
 
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Reason for Visit (Optional)</label>
+                <label className="block text-sm font-bold text-slate-700 dark:text-zinc-300 mb-2">Reason for Visit (Optional)</label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  className="w-full p-4 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+                  className="w-full p-4 border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-100 rounded-xl focus:ring-2 focus:ring-teal-500 dark:focus:ring-teal-500 transition-all resize-none placeholder:text-slate-400 dark:placeholder:text-zinc-600"
                   rows={4}
                   placeholder="Briefly describe your symptoms or reason for visit..."
                 />
               </div>
 
-              <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-                <h4 className="font-bold text-blue-900 mb-2">Summary</h4>
-                <div className="space-y-2 text-sm text-blue-800">
+              <div className="bg-teal-50 dark:bg-teal-900/10 p-6 rounded-2xl border border-teal-100 dark:border-teal-900/30">
+                <h4 className="font-bold text-teal-900 dark:text-teal-300 mb-2">Summary</h4>
+                <div className="space-y-2 text-sm text-teal-800 dark:text-teal-400/80">
                   <p className="flex justify-between">
                     <span>Doctor:</span> 
                     <span className="font-bold">Dr. {selectedDoctor.FirstName} {selectedDoctor.LastName}</span>
@@ -362,9 +362,9 @@ export default function BookAppointmentPage() {
                     <span>Time:</span> 
                     <span className="font-bold">{selectedTime || 'Not selected'}</span>
                   </p>
-                  <p className="flex justify-between pt-2 border-t border-blue-200 mt-2">
+                  <p className="flex justify-between pt-2 border-t border-teal-200 dark:border-teal-900/50 mt-2">
                     <span>Consultation Fee:</span> 
-                    <span className="font-bold">₹{selectedDoctor.ConsultationFee.toString()}</span>
+                    <span className="font-bold text-teal-900 dark:text-teal-300">₹{selectedDoctor.ConsultationFee.toString()}</span>
                   </p>
                 </div>
               </div>
@@ -372,10 +372,10 @@ export default function BookAppointmentPage() {
               <button
                 onClick={handleBook}
                 disabled={!selectedDate || !selectedTime || booking}
-                className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all border border-transparent ${
                   !selectedDate || !selectedTime || booking
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-blue-600 text-white hover:bg-blue-700 shadow-md hover:shadow-lg active:scale-[0.98]"
+                    ? "bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-600 cursor-not-allowed dark:border-zinc-700"
+                    : "bg-teal-600 dark:bg-teal-500 text-white hover:bg-teal-700 dark:hover:bg-teal-600 shadow-md hover:shadow-lg active:scale-[0.98]"
                 }`}
               >
                 {booking ? "Confirming..." : "Confirm Appointment"}

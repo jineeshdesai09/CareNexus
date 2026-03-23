@@ -19,8 +19,8 @@ export default function VitalsChart({ data, label, color, unit }: VitalsChartPro
     
     if (validData.length < 2) {
         return (
-            <div className="h-32 flex items-center justify-center border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
-                <p className="text-xs text-slate-400 font-medium italic">Insuffient data for {label} trend</p>
+            <div className="h-32 flex items-center justify-center border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl bg-slate-50/50 dark:bg-zinc-900/50">
+                <p className="text-xs text-slate-400 dark:text-zinc-500 font-medium italic">Insuffient data for {label} trend</p>
             </div>
         );
     }
@@ -43,17 +43,17 @@ export default function VitalsChart({ data, label, color, unit }: VitalsChartPro
     const pathD = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ');
 
     return (
-        <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-100 dark:border-zinc-800 shadow-sm">
             <div className="flex justify-between items-end mb-4">
                 <div>
-                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">{label}</h4>
+                    <h4 className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1">{label}</h4>
                     <div className="flex items-baseline gap-1">
-                        <span className="text-2xl font-black text-slate-800">{validData[validData.length - 1].value}</span>
-                        <span className="text-xs font-bold text-slate-400">{unit}</span>
+                        <span className="text-2xl font-black text-slate-800 dark:text-zinc-100">{validData[validData.length - 1].value}</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-zinc-500">{unit}</span>
                     </div>
                 </div>
                 <div className="text-right">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${validData.length > 1 && validData[validData.length-1].value > validData[validData.length-2].value ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${validData.length > 1 && validData[validData.length-1].value > validData[validData.length-2].value ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400'}`}>
                         {validData.length > 1 ? (validData[validData.length-1].value > validData[validData.length-2].value ? '↑ Up' : '↓ Down') : 'Stable'}
                     </span>
                 </div>
@@ -61,8 +61,8 @@ export default function VitalsChart({ data, label, color, unit }: VitalsChartPro
             
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-24 overflow-visible">
                 {/* Horizontal Guidelines */}
-                <line x1={padding} y1={padding} x2={width-padding} y2={padding} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
-                <line x1={padding} y1={height-padding} x2={width-padding} y2={height-padding} stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1={padding} y1={padding} x2={width-padding} y2={padding} stroke="currentColor" className="text-slate-200 dark:text-zinc-700" strokeWidth="1" strokeDasharray="4 4" />
+                <line x1={padding} y1={height-padding} x2={width-padding} y2={height-padding} stroke="currentColor" className="text-slate-200 dark:text-zinc-700" strokeWidth="1" strokeDasharray="4 4" />
                 
                 {/* Main Trend Line */}
                 <path
@@ -81,10 +81,10 @@ export default function VitalsChart({ data, label, color, unit }: VitalsChartPro
                             cx={p.x}
                             cy={p.y}
                             r="4"
-                            fill="white"
+                            fill="currentColor"
                             stroke={color}
                             strokeWidth="2"
-                            className="transition-all group-hover:r-6 cursor-pointer"
+                            className="bg-white dark:bg-zinc-900 text-white dark:text-zinc-900 transition-all group-hover:r-6 cursor-pointer"
                         />
                         <title>{`${p.date}: ${p.value}${unit}`}</title>
                     </g>
@@ -92,8 +92,8 @@ export default function VitalsChart({ data, label, color, unit }: VitalsChartPro
             </svg>
             
             <div className="flex justify-between mt-2">
-                <span className="text-[10px] font-bold text-slate-300 uppercase">{validData[0].date}</span>
-                <span className="text-[10px] font-bold text-slate-300 uppercase">{validData[validData.length - 1].date}</span>
+                <span className="text-[10px] font-bold text-slate-300 dark:text-zinc-600 uppercase">{validData[0].date}</span>
+                <span className="text-[10px] font-bold text-slate-300 dark:text-zinc-600 uppercase">{validData[validData.length - 1].date}</span>
             </div>
         </div>
     );

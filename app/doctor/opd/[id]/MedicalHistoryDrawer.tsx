@@ -40,7 +40,7 @@ export default function MedicalHistoryDrawer({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full mt-4 bg-indigo-50 text-indigo-700 border border-indigo-200 py-2 rounded-lg font-medium hover:bg-indigo-100 transition flex items-center justify-center gap-2 text-sm"
+        className="w-full mt-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/30 py-2 rounded-lg font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition flex items-center justify-center gap-2 text-sm"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -50,45 +50,45 @@ export default function MedicalHistoryDrawer({
 
       {/* Drawer Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-gray-900/50 backdrop-blur-sm transition-opacity">
+        <div className="fixed inset-0 z-50 flex justify-end bg-gray-900/50 dark:bg-black/60 backdrop-blur-sm transition-opacity">
           {/* Drawer Content */}
-          <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
+          <div className="w-full max-w-md bg-white dark:bg-zinc-950 h-full shadow-2xl flex flex-col animate-slide-in-right border-l border-transparent dark:border-zinc-800">
             {/* Header */}
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-800">
+            <div className="p-4 border-b border-gray-200 dark:border-zinc-800 flex justify-between items-center bg-gray-50 dark:bg-zinc-900">
+              <h2 className="text-lg font-bold text-gray-800 dark:text-zinc-100">
                 Medical History
               </h2>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded-full transition"
+                className="p-2 text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-full transition"
               >
                 ✕
               </button>
             </div>
 
             {/* Scrollable Content */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-6 bg-gray-50">
-              <div className="text-sm text-gray-500 mb-2">
-                Showing previous completed visits for <span className="font-semibold text-gray-800">{patientName}</span>
+            <div className="p-4 overflow-y-auto flex-1 space-y-6 bg-gray-50 dark:bg-zinc-950/50">
+              <div className="text-sm text-gray-500 dark:text-zinc-400 mb-2">
+                Showing previous completed visits for <span className="font-semibold text-gray-800 dark:text-zinc-200">{patientName}</span>
               </div>
 
               {pastOpds.length === 0 ? (
-                <div className="text-center text-gray-500 py-10 bg-white rounded-lg border border-dashed border-gray-300">
+                <div className="text-center text-gray-500 dark:text-zinc-500 py-10 bg-white dark:bg-zinc-900 rounded-lg border border-dashed border-gray-300 dark:border-zinc-700">
                   No previous consultation records found.
                 </div>
               ) : (
                 pastOpds.map((opd) => (
-                  <div key={opd.OPDID} className="bg-white border rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-indigo-50 px-4 py-3 border-b border-indigo-100 flex justify-between items-center">
-                      <div className="font-bold text-indigo-900">
+                  <div key={opd.OPDID} className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl shadow-sm overflow-hidden">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/20 px-4 py-3 border-b border-indigo-100 dark:border-indigo-800/30 flex justify-between items-center">
+                      <div className="font-bold text-indigo-900 dark:text-indigo-300">
                         {new Date(opd.OPDDateTime).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
                         })}
                       </div>
-                      <div className="text-xs font-semibold px-2 py-1 bg-white text-indigo-600 rounded-md border border-indigo-200">
+                      <div className="text-xs font-semibold px-2 py-1 bg-white dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 rounded-md border border-indigo-200 dark:border-indigo-800/50">
                          Status: {opd.Status}
                       </div>
                     </div>
@@ -96,20 +96,20 @@ export default function MedicalHistoryDrawer({
                     <div className="p-4 space-y-4">
                         {/* Vitals Summary */}
                         {(opd.BP_Systolic || opd.Weight || opd.Temperature) && (
-                            <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
-                                {opd.Weight && <div><span className="font-semibold text-gray-800">Wt:</span> {opd.Weight.toString()}kg</div>}
-                                {opd.BP_Systolic && <div><span className="font-semibold text-gray-800">BP:</span> {opd.BP_Systolic}/{opd.BP_Diastolic}</div>}
-                                {opd.Temperature && <div><span className="font-semibold text-gray-800">Temp:</span> {opd.Temperature.toString()}°C</div>}
+                            <div className="grid grid-cols-3 gap-2 text-xs text-gray-600 dark:text-zinc-400 bg-gray-50 dark:bg-zinc-950/50 p-2 rounded-lg border border-gray-100 dark:border-zinc-800/50">
+                                {opd.Weight && <div><span className="font-semibold text-gray-800 dark:text-zinc-300">Wt:</span> {opd.Weight.toString()}kg</div>}
+                                {opd.BP_Systolic && <div><span className="font-semibold text-gray-800 dark:text-zinc-300">BP:</span> {opd.BP_Systolic}/{opd.BP_Diastolic}</div>}
+                                {opd.Temperature && <div><span className="font-semibold text-gray-800 dark:text-zinc-300">Temp:</span> {opd.Temperature.toString()}°C</div>}
                             </div>
                         )}
 
                         {/* Diagnoses */}
                         {opd.Diagnoses.length > 0 && (
                             <div>
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Diagnoses</div>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Diagnoses</div>
+                                <div className="flex flex-wrap gap-1.5">
                                     {opd.Diagnoses.map(d => (
-                                        <span key={d.DiagnosisType.DiagnosisTypeName} className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
+                                        <span key={d.DiagnosisType.DiagnosisTypeName} className="px-2 py-1 flex items-center bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs rounded-lg border border-blue-100 dark:border-blue-800/30">
                                             {d.DiagnosisType.DiagnosisTypeName}
                                         </span>
                                     ))}
@@ -120,14 +120,14 @@ export default function MedicalHistoryDrawer({
                         {/* Prescriptions */}
                         {opd.prescription && opd.prescription.Medicines.length > 0 && (
                             <div>
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Prescription</div>
+                                <div className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-2">Prescription</div>
                                 <ul className="space-y-2">
                                     {opd.prescription.Medicines.map((m, idx) => (
-                                        <li key={idx} className="text-sm flex flex-col border-l-2 border-indigo-200 pl-3 py-0.5">
-                                            <span className="font-medium text-gray-800">
+                                        <li key={idx} className="text-sm flex flex-col border-l-2 border-indigo-300 dark:border-indigo-600 pl-3 py-0.5">
+                                            <span className="font-semibold text-gray-800 dark:text-zinc-200">
                                                 {m.Medicine?.Name || m.MedicineName || "Unknown Medicine"}
                                             </span>
-                                            <span className="text-gray-500 text-xs">
+                                            <span className="text-gray-500 dark:text-zinc-400 text-xs mt-0.5 font-medium">
                                                 {m.Dosage} • {m.Frequency} • {m.Duration}
                                             </span>
                                         </li>
@@ -139,14 +139,14 @@ export default function MedicalHistoryDrawer({
                         {/* Clinical Notes */}
                         {opd.prescription?.Notes && (
                              <div>
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Notes</div>
-                                <p className="text-sm text-gray-700 italic border-l-2 border-gray-200 pl-3">"{opd.prescription.Notes}"</p>
+                                <div className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Notes</div>
+                                <p className="text-sm text-gray-700 dark:text-zinc-300 italic border-l-2 border-gray-200 dark:border-zinc-700 pl-3 mt-1">"{opd.prescription.Notes}"</p>
                             </div>
                         )}
                         {!opd.prescription?.Notes && opd.Description && (
                             <div>
-                                <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Notes</div>
-                                <p className="text-sm text-gray-700 italic border-l-2 border-gray-200 pl-3">"{opd.Description}"</p>
+                                <div className="text-xs font-bold text-gray-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Notes</div>
+                                <p className="text-sm text-gray-700 dark:text-zinc-300 italic border-l-2 border-gray-200 dark:border-zinc-700 pl-3 mt-1">"{opd.Description}"</p>
                             </div>
                         )}
                     </div>

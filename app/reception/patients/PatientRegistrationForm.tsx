@@ -4,6 +4,9 @@ import React, { useState } from "react";
 import { createPatient } from "@/app/actions/patient";
 import { User, MapPin, Phone, Briefcase, Heart, Search, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const PatientRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -66,24 +69,24 @@ const PatientRegistrationForm = () => {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500 pb-12 pt-4">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3">
-            <span className="p-2 bg-blue-600 rounded-xl text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-zinc-50 tracking-tight flex items-center gap-3">
+            <span className="p-2.5 bg-teal-100 dark:bg-teal-900/30 rounded-xl text-teal-700 dark:text-teal-400">
                 <User className="w-6 h-6" />
             </span>
             Patient Registration
           </h1>
-          <p className="text-gray-500 mt-1 font-medium">Create a new digital medical record for a patient</p>
+          <p className="text-slate-500 dark:text-zinc-400 mt-2 font-medium">Create a new digital medical record for a patient</p>
         </div>
         <div className="flex gap-3">
-            <Link href="/reception/patients/directory" className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition shadow-sm">
+            <Link href="/reception/patients/directory" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-sm font-medium text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500">
                 <Search className="w-4 h-4" />
-                View Directory
+                Directory
             </Link>
-            <Link href="/reception/dashboard" className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-200 transition">
+            <Link href="/reception/dashboard" className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-zinc-800 rounded-lg text-sm font-medium text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-zinc-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500">
                 <ArrowLeft className="w-4 h-4" />
                 Back
             </Link>
@@ -94,52 +97,53 @@ const PatientRegistrationForm = () => {
         {/* Left: Personal & Contact */}
         <div className="lg:col-span-2 space-y-8">
           {/* Section 1: Basic Info */}
-          <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 border-b border-gray-50 pb-4">
-                <Heart className="w-5 h-5 text-red-500" />
-                Basic Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-none shadow-sm ring-1 ring-slate-200 dark:ring-zinc-800">
+            <CardHeader className="border-b border-slate-100 dark:border-zinc-800/50 pb-4">
+                <CardTitle className="text-sm font-bold text-teal-600 dark:text-teal-500 uppercase tracking-widest flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-rose-500" />
+                    Basic Information
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="md:col-span-2">
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Patient Name</label>
-                    <input
+                    <Input
+                        label="FULL PATIENT NAME"
                         name="PatientName"
                         value={formData.PatientName}
                         onChange={handleChange}
                         required
                         placeholder="e.g. John Doe"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Date of Birth</label>
+                    <label className="block text-sm font-medium leading-none mb-1.5 text-slate-900 dark:text-zinc-300">DATE OF BIRTH</label>
                     <input
                         type="date"
                         name="DOB"
                         value={formData.DOB}
                         onChange={handleChange}
                         required
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
+                        className="flex h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm transition-shadow focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-visible:ring-teal-500 border-slate-300"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Current Age</label>
-                    <input
+                    <Input
+                        label="CURRENT AGE"
                         type="text"
                         value={formData.age}
                         readOnly
                         placeholder="Auto-calculated"
-                        className="w-full px-5 py-3 bg-gray-100 border border-gray-200 rounded-2xl text-gray-500 font-bold cursor-not-allowed"
+                        disabled
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Gender</label>
+                    <label className="block text-sm font-medium leading-none mb-1.5 text-slate-900 dark:text-zinc-300">GENDER</label>
                     <select
                         name="Gender"
                         value={formData.Gender}
                         onChange={handleChange}
                         required
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium appearance-none"
+                        className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm transition-shadow focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-visible:ring-teal-500 appearance-none font-medium"
                     >
                         <option value="">Select Gender</option>
                         <option value="Male">Male</option>
@@ -148,12 +152,12 @@ const PatientRegistrationForm = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Blood Group</label>
+                    <label className="block text-sm font-medium leading-none mb-1.5 text-slate-900 dark:text-zinc-300">BLOOD GROUP</label>
                     <select
                         name="BloodGroup"
                         value={formData.BloodGroup}
                         onChange={handleChange}
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium appearance-none"
+                        className="flex h-10 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm transition-shadow focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-visible:ring-teal-500 appearance-none font-medium"
                     >
                         <option value="">Unknown</option>
                         <option value="A+">A+</option>
@@ -167,136 +171,138 @@ const PatientRegistrationForm = () => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Height (cm)</label>
-                    <input
+                    <Input
+                        label="HEIGHT (CM)"
                         type="number"
                         step="0.1"
                         name="Height"
                         value={formData.Height}
                         onChange={handleChange}
                         placeholder="e.g. 175"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Section 2: Contact Info */}
-          <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2 border-b border-gray-50 pb-4">
-                <Phone className="w-5 h-5 text-blue-500" />
-                Contact Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-none shadow-sm ring-1 ring-slate-200 dark:ring-zinc-800">
+            <CardHeader className="border-b border-slate-100 dark:border-zinc-800/50 pb-4">
+                <CardTitle className="text-sm font-bold text-teal-600 dark:text-teal-500 uppercase tracking-widest flex items-center gap-2">
+                    <Phone className="w-4 h-4" />
+                    Contact Details
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Primary Mobile No</label>
-                    <input
+                    <Input
+                        label="PRIMARY MOBILE NO"
                         type="tel"
                         name="MobileNo"
                         value={formData.MobileNo}
                         onChange={handleChange}
                         required
                         placeholder="10-digit number"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Emergency Contact</label>
-                    <input
+                    <Input
+                        label="EMERGENCY CONTACT"
                         type="tel"
                         name="EmergencyContactNo"
                         value={formData.EmergencyContactNo}
                         onChange={handleChange}
                         required
                         placeholder="Relative's number"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
                 <div className="md:col-span-2">
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Residential Address</label>
+                    <label className="block text-sm font-medium leading-none mb-1.5 text-slate-900 dark:text-zinc-300">RESIDENTIAL ADDRESS</label>
                     <textarea
                         name="Address"
                         value={formData.Address}
                         onChange={handleChange}
                         rows={2}
                         placeholder="House no, Street, Locality..."
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
+                        className="flex min-h-[80px] w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm transition-shadow focus-visible:outline-none focus-visible:border-teal-500 focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:placeholder:text-zinc-500 dark:focus-visible:ring-teal-500 resize-none"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Pin Code</label>
-                    <input
+                    <Input
+                        label="PIN CODE"
                         name="PinCode"
                         value={formData.PinCode}
                         onChange={handleChange}
                         placeholder="6-digit code"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Occupation</label>
-                    <input
+                    <Input
+                        label="OCCUPATION"
                         name="Occupation"
                         value={formData.Occupation}
                         onChange={handleChange}
                         placeholder="e.g. Student, Engineer"
-                        className="w-full px-5 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-white focus:outline-none transition-all text-gray-900 font-medium"
                     />
                 </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right: Referral & Summary */}
-        <div className="space-y-8">
-            <div className="bg-slate-900 p-8 rounded-3xl text-white space-y-6 shadow-xl shadow-slate-200">
-                <h2 className="text-xl font-bold flex items-center gap-2 border-b border-slate-800 pb-4">
-                    <Briefcase className="w-5 h-5 text-blue-400" />
-                    Referral Details
-                </h2>
-                <div className="space-y-4">
+        <div className="space-y-6">
+            <Card className="bg-slate-900 dark:bg-zinc-950 text-white border-none ring-1 ring-slate-800 dark:ring-zinc-800 shadow-xl shadow-slate-200 dark:shadow-none">
+                <CardHeader className="border-b border-slate-800 dark:border-zinc-900 pb-4">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                        <Briefcase className="w-4 h-4 text-teal-400" />
+                        Referral Details
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
                     <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Referred By (Doctor/Hospital)</label>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Referred By (Doctor/Hospital)</label>
                         <input
                             name="ReferredBy"
                             value={formData.ReferredBy}
                             onChange={handleChange}
-                            className="w-full px-5 py-3 bg-slate-800 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-slate-700 focus:outline-none transition-all text-white font-medium"
+                            className="w-full px-4 py-2.5 bg-slate-800 dark:bg-zinc-900 border border-slate-700 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all text-white font-medium text-sm"
                         />
                     </div>
                     <div>
-                        <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Clinical Remarks (Internal)</label>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Clinical Remarks (Internal)</label>
                         <textarea
                             name="Description"
                             value={formData.Description}
                             onChange={handleChange}
                             rows={4}
-                            className="w-full px-5 py-3 bg-slate-800 border border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:bg-slate-700 focus:outline-none transition-all text-white font-medium"
+                            className="w-full px-4 py-2.5 bg-slate-800 dark:bg-zinc-900 border border-slate-700 dark:border-zinc-800 rounded-lg focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all text-white font-medium text-sm resize-none"
                         />
                     </div>
-                </div>
-            </div>
+                </CardContent>
+            </Card>
 
-            <div className="space-y-4">
-                <button
+            <div className="space-y-3">
+                <Button
                     type="submit"
-                    className="w-full py-5 bg-blue-600 text-white rounded-3xl font-black text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 active:scale-[0.98] flex items-center justify-center gap-3"
+                    size="lg"
+                    className="w-full font-bold shadow-lg hover:shadow-teal-600/20 py-6"
                 >
-                    <User className="w-6 h-6" />
+                    <User className="w-5 h-5 mr-2" />
                     REGISTER PATIENT
-                </button>
+                </Button>
 
-                <button
+                <Button
                     type="button"
+                    variant="outline"
                     onClick={handleCancel}
-                    className="w-full py-4 bg-white text-gray-500 border border-gray-200 rounded-3xl font-bold hover:bg-gray-50 transition-all"
+                    size="lg"
+                    className="w-full font-bold py-6"
                 >
                     RESET FORM
-                </button>
+                </Button>
             </div>
 
-            <div className="p-6 bg-amber-50 rounded-3xl border border-amber-100">
-                <p className="text-xs text-amber-800 leading-relaxed font-medium italic">
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-900/50">
+                <p className="text-xs text-amber-800 dark:text-amber-500 leading-relaxed font-medium">
                     * Patient ID will be automatically issued based on the next sequence in the hospital master records.
                 </p>
             </div>

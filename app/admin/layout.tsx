@@ -1,9 +1,20 @@
 import Link from "next/link";
 import { logout } from "@/app/actions/logout";
-import { requireAuth } from "../lib/auth";
-import { getCurrentUser } from "../lib/auth";
+import { requireAuth, getCurrentUser } from "../lib/auth";
+import { Header } from "@/components/layout/header";
+import { 
+  LayoutDashboard, 
+  Building2, 
+  Stethoscope, 
+  Activity, 
+  FileText, 
+  Layers, 
+  Users, 
+  BarChart3, 
+  ShieldAlert 
+} from "lucide-react";
 
-export const runtime = "nodejs"; // whats is this
+export const runtime = "nodejs";
 
 export default async function AdminLayout({
   children,
@@ -14,68 +25,80 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-gray-900 text-white p-5">
-        <h2 className="text-xl font-bold mb-6">OPD Admin</h2>
+    <div className="min-h-screen flex overflow-hidden bg-slate-50 dark:bg-zinc-950">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-zinc-900 border-r border-slate-200 dark:border-zinc-800">
+        <div className="p-5 border-b border-slate-200 dark:border-zinc-800 flex items-center h-16">
+          <h2 className="text-xl font-bold text-teal-700 dark:text-teal-500 tracking-tight">OPD Admin</h2>
+        </div>
 
-        <nav className="space-y-3 flex-1">
-          <Link href="/admin/dashboard" className="block hover:text-blue-400">
+        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+          <Link href="/admin/dashboard" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <LayoutDashboard size={18} />
             Dashboard
           </Link>
-
-          <Link href="/admin/hospital" className="block hover:text-blue-400">
-            Hospital Master
+          <div className="pt-4 pb-2 px-3">
+            <p className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Masters</p>
+          </div>
+          <Link href="/admin/hospital" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <Building2 size={18} />
+            Hospital
           </Link>
-
-          <Link href="/admin/doctors" className="block hover:text-blue-400">
-            Doctor Master
+          <Link href="/admin/doctors" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <Stethoscope size={18} />
+            Doctor
           </Link>
-
-          <Link href="/admin/diagnosis" className="block hover:text-blue-400">
-            Diagnosis Master
+          <Link href="/admin/diagnosis" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <Activity size={18} />
+            Diagnosis
           </Link>
-
-          <Link href="/admin/treatments" className="block hover:text-blue-400">
-            Treatment Types
+          <Link href="/admin/treatments" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <FileText size={18} />
+            Treatments
           </Link>
-
-          <Link href="/admin/sub-treatments" className="block hover:text-blue-400">
+          <Link href="/admin/sub-treatments" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <Layers size={18} />
             Sub Treatments
           </Link>
 
-          <Link href="/admin/users" className="block hover:text-blue-400">
+          <div className="pt-4 pb-2 px-3">
+            <p className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">System</p>
+          </div>
+          <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <Users size={18} />
             User Management
           </Link>
-
-          <Link href="/admin/reports" className="block hover:text-blue-400">
+          <Link href="/admin/reports" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <BarChart3 size={18} />
             Reports & Analytics
           </Link>
-
-          <Link href="/admin/audit-logs" className="block hover:text-blue-400">
+          <Link href="/admin/audit-logs" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
+            <ShieldAlert size={18} />
             Audit Logs
           </Link>
         </nav>
-        <div className="mb-6 text-sm text-gray-300">
-          Logged in as <br />
-          <span className="font-semibold text-white">
-            {user?.Name} ({user?.Role})
-          </span>
-        </div>
 
-        {/* ✅ Logout */}
-        <form action={logout}>
-          <button
-            type="submit"
-            className="mt-6 w-full text-left text-red-400 hover:text-red-300"
-          >
-            Logout
-          </button>
-        </form>
+        <div className="p-4 border-t border-slate-200 dark:border-zinc-800">
+          <form action={logout}>
+            <button
+              type="submit"
+              className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-lg transition-colors dark:text-rose-400 dark:bg-rose-500/10 dark:hover:bg-rose-500/20"
+            >
+              Logout
+            </button>
+          </form>
+        </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header userName={user?.Name} userRole={user?.Role} />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

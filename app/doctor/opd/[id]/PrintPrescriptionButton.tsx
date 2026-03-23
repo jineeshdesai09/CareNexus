@@ -111,7 +111,7 @@ export default function PrintPrescriptionButton({ data }: PrintPrescriptionButto
 
         let finalY = 90 + vitalsYOffset;
         if (data.medicines.length > 0) {
-            const result = autoTable(doc, {
+            autoTable(doc, {
                 startY: 90 + vitalsYOffset,
                 head: [['Medicine', 'Dosage', 'Frequency', 'Duration', 'Instructions']],
                 body: data.medicines.map(m => [
@@ -125,7 +125,7 @@ export default function PrintPrescriptionButton({ data }: PrintPrescriptionButto
                 headStyles: { fillColor: [41, 128, 185] },
                 margin: { left: 15, right: 15 }
             });
-            finalY = (result as any).lastAutoTable?.finalY || (90 + vitalsYOffset);
+            finalY = (doc as any).lastAutoTable?.finalY || (90 + vitalsYOffset);
         } else {
             doc.setFontSize(10);
             doc.text("No medications prescribed.", 15, 115);
@@ -156,7 +156,7 @@ export default function PrintPrescriptionButton({ data }: PrintPrescriptionButto
     return (
         <button
             onClick={generatePDF}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition font-semibold shadow-md active:scale-95"
+            className="flex items-center gap-2 bg-blue-600 dark:bg-blue-500 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition font-semibold shadow-md active:scale-95"
         >
             <Printer className="w-5 h-5" />
             Print Prescription (PDF)
