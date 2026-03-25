@@ -10,8 +10,6 @@ import "react-datepicker/dist/react-datepicker.css";
 export default function BookAppointmentPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [specializations, setSpecializations] = useState<string[]>([]);
-  const [selectedSpecialization, setSelectedSpecialization] = useState("");
   const [doctors, setDoctors] = useState<any[]>([]);
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -57,21 +55,8 @@ export default function BookAppointmentPage() {
   };
 
   useEffect(() => {
-    getAvailableSpecializations()
-      .then(specs => {
-        setSpecializations(specs);
-        setLoading(false);
-      })
-      .catch(err => {
-        setError("Failed to load specializations.");
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => {
-    if (selectedSpecialization) {
-      setLoading(true);
-      getDoctorsBySpecialization(selectedSpecialization)
+    import("@/app/actions/patient").then(({ getAllDoctors }) => {
+      getAllDoctors()
         .then(docs => {
           setDoctors(docs);
           setLoading(false);
@@ -80,17 +65,12 @@ export default function BookAppointmentPage() {
           setError("Failed to load doctors.");
           setLoading(false);
         });
-    }
-  }, [selectedSpecialization]);
-
-  const handleSpecializationSelect = (spec: string) => {
-    setSelectedSpecialization(spec);
-    setStep(2);
-  };
+    });
+  }, []);
 
   const handleDoctorSelect = (doc: any) => {
     setSelectedDoctor(doc);
-    setStep(3);
+    setStep(2);
   };
 
   const handleBook = async () => {
@@ -99,12 +79,12 @@ export default function BookAppointmentPage() {
     setError("");
 
     try {
-      // Force local date string extraction (YYYY-MM-DD) to prevent timezone drift
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
       const dateString = `${year}-${month}-${day}`;
 
+      const { bookAppointment } = await import("@/app/actions/patient");
       await bookAppointment(selectedDoctor.DoctorID, dateString, reason, selectedTime);
       setSuccess(true);
     } catch (err: any) {
@@ -122,7 +102,6 @@ export default function BookAppointmentPage() {
   const isDayAvailable = (date: Date) => {
     const day = date.getDay();
     const availableDays = getAvailableDays();
-    // Compare date-only (not time) so today is allowed
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return availableDays.includes(day) && date >= today;
@@ -173,7 +152,7 @@ export default function BookAppointmentPage() {
       )}
 
       <div className="flex gap-4 mb-8">
-        {[1, 2, 3].map((s) => (
+        {[1, 2].map((s) => (
           <div 
             key={s} 
             className={`flex-1 h-2 rounded-full transition-colors duration-500 ${
@@ -184,69 +163,31 @@ export default function BookAppointmentPage() {
       </div>
 
       {step === 1 && (
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 mb-6 flex items-center gap-2">
-            <Stethoscope className="text-teal-500 dark:text-teal-400" />
-            1. Select Speciality
-          </h2>
-          
-          {loading ? (
-            <div className="text-center py-12 text-slate-400 dark:text-zinc-500">Loading specialities...</div>
-          ) : specializations.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
-              No doctors are currently available for booking.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {specializations.map((spec) => (
-                <button
-                  key={spec}
-                  onClick={() => handleSpecializationSelect(spec)}
-                  className="p-6 text-left border-2 border-slate-100 dark:border-zinc-800 rounded-2xl hover:border-teal-500 dark:hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/10 transition-all group bg-white dark:bg-zinc-950"
-                >
-                  <p className="font-bold text-slate-900 dark:text-zinc-100 group-hover:text-teal-700 dark:group-hover:text-teal-400">{spec}</p>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {step === 2 && (
         <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800 animate-in slide-in-from-right-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <span className="text-teal-500 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 p-2 rounded-xl border border-teal-100 dark:border-teal-800/50"><Stethoscope className="w-5 h-5" /></span>
-              2. Select Doctor
+              1. Select Doctor
             </h2>
-            <button 
-              onClick={() => setStep(1)}
-              className="text-sm font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              Back to Specialities
-            </button>
           </div>
-          
-          <p className="text-sm text-slate-500 dark:text-zinc-400 mb-6 font-bold uppercase tracking-wider">
-            Showing specialists for <span className="text-teal-600 dark:text-teal-400">{selectedSpecialization}</span>
-          </p>
 
           {loading ? (
             <div className="text-center py-12 text-slate-400 dark:text-zinc-500">Loading doctors...</div>
           ) : doctors.length === 0 ? (
             <div className="text-center py-12 text-slate-400 dark:text-zinc-500 bg-slate-50 dark:bg-zinc-950 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
-              No doctors found for this speciality.
+              No doctors are currently available for booking.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {doctors.map((doc) => (
                 <div
                   key={doc.DoctorID}
-                  className="p-6 border-2 border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-2xl hover:border-teal-200 dark:hover:border-teal-800 transition-all flex flex-col justify-between"
+                  className="p-6 border-2 border-slate-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 rounded-2xl hover:border-teal-500 hover:bg-teal-50 dark:hover:border-teal-800 dark:hover:bg-zinc-900/50 transition-all flex flex-col justify-between"
                 >
                   <div className="mb-4">
                     <h3 className="font-bold text-lg text-slate-900 dark:text-zinc-100">Dr. {doc.FirstName} {doc.LastName}</h3>
-                    <p className="text-sm text-slate-500 dark:text-zinc-400 mb-2">{doc.ExperienceYears} Years Experience</p>
+                    <p className="text-sm font-bold text-teal-600 dark:text-teal-400 mb-1">{doc.Specialization}</p>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400 mb-3">{doc.ExperienceYears} Years Experience</p>
                     <div className="flex gap-2 flex-wrap">
                       {doc.Availabilities.map((a: any) => (
                         <span key={a.DayOfWeek} className="text-xs font-bold bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-2 py-1 rounded-md border border-slate-200 dark:border-zinc-700">
@@ -268,15 +209,15 @@ export default function BookAppointmentPage() {
         </div>
       )}
 
-      {step === 3 && selectedDoctor && (
+      {step === 2 && selectedDoctor && (
         <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm dark:shadow-none border border-slate-100 dark:border-zinc-800 animate-in slide-in-from-right-8">
           <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 dark:border-zinc-800">
             <h2 className="text-xl font-bold text-slate-900 dark:text-zinc-100 flex items-center gap-2">
               <span className="text-teal-500 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20 p-2 rounded-xl border border-teal-100 dark:border-teal-800/50"><CalendarIcon className="w-5 h-5" /></span>
-              3. Choose Date & Details
+              2. Choose Date & Details
             </h2>
             <button 
-              onClick={() => setStep(2)}
+              onClick={() => setStep(1)}
               className="text-sm font-bold text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 transition-colors"
             >
               Back to Doctors
@@ -291,7 +232,7 @@ export default function BookAppointmentPage() {
                 {selectedDoctor.Availabilities.map((a: any) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][a.DayOfWeek]).join(", ")}
               </p>
               
-              <div className="calendar-container border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 inline-block bg-slate-50 dark:bg-zinc-950">
+              <div className="calendar-container border border-slate-200 dark:border-zinc-800 rounded-2xl p-4 inline-block bg-slate-50 dark:bg-zinc-950 relative z-0">
                 <DatePicker
                   selected={selectedDate}
                   onChange={(date: Date | null) => {
@@ -352,7 +293,7 @@ export default function BookAppointmentPage() {
                   </p>
                   <p className="flex justify-between">
                     <span>Speciality:</span> 
-                    <span className="font-bold">{selectedSpecialization}</span>
+                    <span className="font-bold">{selectedDoctor.Specialization}</span>
                   </p>
                   <p className="flex justify-between">
                     <span>Date:</span> 

@@ -107,6 +107,29 @@ export async function getAvailableSpecializations() {
   return specializations.map(s => s.Specialization);
 }
 
+export async function getAllDoctors() {
+  const user = await getCurrentUser();
+  if (!user || user.Role !== "PATIENT") throw new Error("Unauthorized");
+
+  const doctors = await prisma.doctor.findMany({
+    where: {
+      Availabilities: {
+        some: { IsAvailable: true }
+      }
+    },
+    include: {
+      Availabilities: {
+        where: { IsAvailable: true }
+      }
+    }
+  });
+
+  return doctors.map(doc => ({
+    ...doc,
+    ConsultationFee: doc.ConsultationFee.toString(),
+  }));
+}
+
 export async function getDoctorsBySpecialization(specialization: string) {
   const user = await getCurrentUser();
   if (!user || user.Role !== "PATIENT") throw new Error("Unauthorized");

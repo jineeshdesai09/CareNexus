@@ -41,5 +41,5 @@ export async function updateHospital(formData: FormData) {
     });
   }
 
-  redirect("/admin/hospital?success=1");
+  redirect(`/admin/hospital/${hospitalId}/edit?success=1`);
 }
