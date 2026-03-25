@@ -34,6 +34,20 @@ const getIconColor = (color: ColorType) => {
   return colors[color] || colors.teal;
 };
 
+const getCardStyles = (color: ColorType) => {
+  const styles: Record<ColorType, { hover: string, bg: string, text: string, border: string }> = {
+    teal: { hover: "hover:ring-teal-500/50", bg: "bg-teal-50 dark:bg-teal-900/40", text: "text-teal-600 dark:text-teal-400", border: "border-teal-100 dark:border-teal-800/50" },
+    emerald: { hover: "hover:ring-emerald-500/50", bg: "bg-emerald-50 dark:bg-emerald-900/40", text: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-100 dark:border-emerald-800/50" },
+    amber: { hover: "hover:ring-amber-500/50", bg: "bg-amber-50 dark:bg-amber-900/40", text: "text-amber-600 dark:text-amber-400", border: "border-amber-100 dark:border-amber-800/50" },
+    rose: { hover: "hover:ring-rose-500/50", bg: "bg-rose-50 dark:bg-rose-900/40", text: "text-rose-600 dark:text-rose-400", border: "border-rose-100 dark:border-rose-800/50" },
+    blue: { hover: "hover:ring-blue-500/50", bg: "bg-blue-50 dark:bg-blue-900/40", text: "text-blue-600 dark:text-blue-400", border: "border-blue-100 dark:border-blue-800/50" },
+    green: { hover: "hover:ring-green-500/50", bg: "bg-green-50 dark:bg-green-900/40", text: "text-green-600 dark:text-green-400", border: "border-green-100 dark:border-green-800/50" },
+    purple: { hover: "hover:ring-purple-500/50", bg: "bg-purple-50 dark:bg-purple-900/40", text: "text-purple-600 dark:text-purple-400", border: "border-purple-100 dark:border-purple-800/50" },
+    orange: { hover: "hover:ring-orange-500/50", bg: "bg-orange-50 dark:bg-orange-900/40", text: "text-orange-600 dark:text-orange-400", border: "border-orange-100 dark:border-orange-800/50" },
+  };
+  return styles[color] || styles.teal;
+};
+
 interface DashboardClientProps {
   userName: string;
   stats: {
@@ -127,21 +141,24 @@ export default function DashboardClient({
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {statCards.map((stat, idx) => (
-          <Card key={idx} className="border-none shadow-sm ring-1 ring-slate-200 dark:ring-zinc-800 bg-white/50 hover:bg-white dark:bg-zinc-900/50 dark:hover:bg-zinc-900 transition-colors">
-            <CardContent className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
-                  {stat.label}
-                </p>
-                <div className={`p-2 rounded-lg ${getIconColor(stat.color)}`}>
-                  <stat.icon className="w-5 h-5" />
+        {statCards.map((stat, idx) => {
+          const styles = getCardStyles(stat.color);
+          return (
+            <Card key={idx} className={`border-none ring-1 ring-slate-200 dark:ring-zinc-800 shadow-sm bg-white dark:bg-zinc-900 ${styles.hover} transition-all group`}>
+              <CardContent className="p-6 !pt-6 flex flex-row items-center gap-5">
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 border shadow-sm transition-transform group-hover:scale-105 ${styles.bg} ${styles.text} ${styles.border}`}>
+                  <stat.icon className="w-6 h-6" />
                 </div>
-              </div>
-              <p className="text-3xl font-bold text-slate-900 dark:text-zinc-50 tracking-tight">{stat.value}</p>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex flex-col gap-0.5 justify-center mt-1">
+                  <p className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-widest leading-none">
+                    {stat.label}
+                  </p>
+                  <p className="text-3xl font-black text-slate-900 dark:text-zinc-50 leading-none">{stat.value}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">

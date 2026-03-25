@@ -44,13 +44,6 @@ export default async function ReceptionLayout({
             Live Status Screen
           </Link>
 
-          <div className="pt-4 pb-2 px-3">
-            <p className="text-xs font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider">System</p>
-          </div>
-          <Link href="/reception/staff/add" className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg text-slate-700 hover:text-teal-700 hover:bg-teal-50 dark:text-zinc-300 dark:hover:bg-zinc-800/50 transition-colors">
-            <Settings size={18} />
-            Staff Management
-          </Link>
         </nav>
 
         <div className="p-4 border-t border-slate-200 dark:border-zinc-800 mt-auto">
